@@ -1,0 +1,4 @@
+diesel setup --database-url="postgres://postgres:password@localhost/sui_db"
+diesel database reset --database-url="postgres://postgres:password@localhost/sui_db"
+cargo run --bin sui-indexer -- --db-url "postgres://postgres:password@localhost/sui_db" --rpc-client-url "http://0.0.0.0:9000" --fullnode-sync-worker --reset-db
+cargo run --bin sui-indexer -- --db-url "postgres://postgres:password@localhost/sui_db" --rpc-client-url "http://0.0.0.0:9000" --rpc-server-worker
