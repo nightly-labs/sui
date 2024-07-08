@@ -87,7 +87,6 @@ impl<P: ProgressStore> IndexerExecutor<P> {
                     self.progress_store.save(task_name.clone(), sequence_number).await?;
                     let seq_number = self.progress_store.min_watermark()?;
                     if seq_number > reader_checkpoint_number {
-                        gc_sender.send(seq_number).await?;
                         reader_checkpoint_number = seq_number;
                     }
                     self.metrics.data_ingestion_checkpoint.with_label_values(&[&task_name]).set(sequence_number as i64);
