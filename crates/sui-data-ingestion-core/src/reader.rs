@@ -258,15 +258,15 @@ impl CheckpointReader {
         info!("cleaning processed files, watermark is {}", watermark);
         self.data_limiter.gc(watermark);
         self.last_pruned_watermark = watermark;
-        for entry in fs::read_dir(self.path.clone())? {
-            let entry = entry?;
-            let filename = entry.file_name();
-            if let Some(sequence_number) = Self::checkpoint_number_from_file_path(&filename) {
-                if sequence_number < watermark {
-                    fs::remove_file(entry.path())?;
-                }
-            }
-        }
+        // for entry in fs::read_dir(self.path.clone())? {
+        //     let entry = entry?;
+        //     let filename = entry.file_name();
+        //     if let Some(sequence_number) = Self::checkpoint_number_from_file_path(&filename) {
+        //         if sequence_number < watermark {
+        //             fs::remove_file(entry.path())?;
+        //         }
+        //     }
+        // }
         Ok(())
     }
 
