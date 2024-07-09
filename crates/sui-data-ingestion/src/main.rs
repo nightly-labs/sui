@@ -100,12 +100,12 @@ async fn main() -> Result<()> {
     let _guard = telemetry_subscribers::TelemetryConfig::new()
         .with_env()
         .init();
-    let registry_service = mysten_metrics::start_prometheus_server(
-        format!("{}:{}", config.metrics_host, config.metrics_port).parse()?,
-    );
-    let registry: Registry = registry_service.default_registry();
-    mysten_metrics::init_metrics(&registry);
-    let metrics = DataIngestionMetrics::new(&registry);
+    // let registry_service = mysten_metrics::start_prometheus_server(
+    //     format!("{}:{}", config.metrics_host, config.metrics_port).parse()?,
+    // );
+    // let registry: Registry = registry_service.default_registry();
+    // mysten_metrics::init_metrics(&registry);
+    // let metrics = DataIngestionMetrics::new(&registry);
 
     let progress_store = DynamoDBProgressStore::new(
         &config.progress_store.aws_access_key_id,
@@ -114,7 +114,8 @@ async fn main() -> Result<()> {
         config.progress_store.table_name,
     )
     .await;
-    let mut executor = IndexerExecutor::new(progress_store, config.tasks.len(), metrics);
+    // let mut executor = IndexerExecutor::new(progress_store, config.tasks.len(), metrics);
+    let mut executor = IndexerExecutor::new(progress_store, config.tasks.len());
     for task_config in config.tasks {
         match task_config.task {
             Task::Archival(archival_config) => {

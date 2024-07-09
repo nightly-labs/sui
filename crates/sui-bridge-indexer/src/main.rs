@@ -92,7 +92,7 @@ async fn start_processing_sui_checkpoints(
     let mut executor = IndexerExecutor::new(
         progress_store,
         1, /* workflow types */
-        ingestion_metrics,
+           // ingestion_metrics,
     );
 
     let indexer_metrics_cloned = indexer_meterics.clone();

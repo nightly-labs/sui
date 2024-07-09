@@ -122,7 +122,7 @@ impl Indexer {
                 ("object_snapshot".to_string(), object_snapshot_watermark),
             ]),
             1,
-            DataIngestionMetrics::new(&Registry::new()),
+            // DataIngestionMetrics::new(&Registry::new()),
         );
         let worker =
             new_handlers::<S, T>(store, metrics, primary_watermark, cancel.clone()).await?;

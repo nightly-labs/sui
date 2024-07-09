@@ -132,10 +132,11 @@ async fn main() -> Result<()> {
     let (_exit_sender, exit_receiver) = oneshot::channel();
     let progress_store = FileProgressStore::new(PathBuf::from(backfill_progress_file_path));
 
-    let registry: Registry = start_basic_prometheus_server();
-    mysten_metrics::init_metrics(&registry);
-    let metrics = DataIngestionMetrics::new(&registry);
-    let mut executor = IndexerExecutor::new(progress_store, 1, metrics);
+    // let registry: Registry = start_basic_prometheus_server();
+    // mysten_metrics::init_metrics(&registry);
+    // let metrics = DataIngestionMetrics::new(&registry);
+    // let mut executor = IndexerExecutor::new(progress_store, 1, metrics);
+    let mut executor = IndexerExecutor::new(progress_store, 1);
 
     let indexer_setup =
         if let (Some(registry_id), Some(subdomain_wrapper_type), Some(name_record_type)) =

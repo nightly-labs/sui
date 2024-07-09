@@ -119,7 +119,7 @@ fn create_executor_bundle() -> ExecutorBundle {
     let executor = IndexerExecutor::new(
         progress_store,
         1,
-        DataIngestionMetrics::new(&Registry::new()),
+        // DataIngestionMetrics::new(&Registry::new()),
     );
     ExecutorBundle {
         executor,
