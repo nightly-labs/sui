@@ -20,6 +20,11 @@ authority-store-pruning-config:
   max-transactions-in-batch: 1000
   pruning-run-delay-seconds: 60
 
+# checkpoint-executor-config:
+#   checkpoint-execution-max-concurrency: 200
+#   local-execution-timeout-sec: 30
+#   data-ingestion-dir: /root/sui-blocks
+  
 p2p-config:
   seed-peers:
     - address: /dns/mel-00.mainnet.sui.io/udp/8084
