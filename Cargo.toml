@@ -706,6 +706,9 @@ sui-execution = { path = "sui-execution" }
 # move-vm-runtime = { path = "external-crates/move/move-vm/runtime" }
 # move-bytecode-verifier = { path = "external-crates/move/move-bytecode-verifier" }
 
+
+odin = { git = "ssh://git@github.com/nightly-labs/alexandria.git", branch = "dependencies", package = "odin" }
+
 # suiop dependencies
 docker-api = "0.12.2"
 field_names = "0.2.0"
