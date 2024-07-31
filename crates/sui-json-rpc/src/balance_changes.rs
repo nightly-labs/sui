@@ -8,7 +8,9 @@ use async_trait::async_trait;
 use move_core_types::language_storage::TypeTag;
 use tokio::sync::RwLock;
 
-use sui_json_rpc_types::BalanceChange;
+use sui_json_rpc_types::{
+    BalanceChange, BalanceChangeWithStatus, CustomBalanceChange, ObjectStatus,
+};
 use sui_types::base_types::{ObjectID, ObjectRef, SequenceNumber};
 use sui_types::coin::Coin;
 use sui_types::digests::ObjectDigest;
@@ -144,6 +146,186 @@ async fn fetch_coins<P: ObjectProvider<Error = E>, E>(
                     o.owner,
                     coin_type,
                     // we know this is a coin, safe to unwrap
+                    Coin::extract_balance_if_coin(&o).unwrap().unwrap(),
+                ))
+            }
+        }
+    }
+    Ok(all_mutated_coins)
+}
+
+////////////////////////////////////////////////////// Custom Methods //////////////////////////////////////////////////////
+// Out own version as the function is called via different methods in the original code which i don't want to fix
+pub async fn get_balance_changes_with_status_from_effect<P: ObjectProvider<Error = E>, E>(
+    object_provider: &P,
+    effects: &TransactionEffects,
+    input_objs: Vec<InputObjectKind>,
+    mocked_coin: Option<ObjectID>,
+    status_map: HashMap<ObjectID, ObjectStatus>,
+    input_objects_to_owner: &HashMap<ObjectID, Owner>,
+    output_objects_to_owner: &HashMap<ObjectID, Owner>,
+) -> Result<Vec<BalanceChangeWithStatus>, E> {
+    let ((object_id, _, _), gas_owner) = effects.gas_object();
+
+    // Only charge gas when tx fails, skip all object parsing
+    if effects.status() != &ExecutionStatus::Success {
+        return Ok(vec![BalanceChangeWithStatus {
+            owner: gas_owner,
+            coin_type: GAS::type_tag(),
+            amount: effects.gas_cost_summary().net_gas_usage().neg() as i128,
+            object_id: object_id.to_canonical_string(true),
+            status: ObjectStatus::Mutated,
+        }]);
+    }
+
+    let all_mutated = effects
+        .all_changed_objects()
+        .into_iter()
+        .filter_map(|((id, version, digest), _, _)| {
+            if matches!(mocked_coin, Some(coin) if id == coin) {
+                return None;
+            }
+            Some((id, version, Some(digest)))
+        })
+        .collect::<Vec<_>>();
+
+    let input_objs_to_digest = input_objs
+        .iter()
+        .filter_map(|k| match k {
+            InputObjectKind::ImmOrOwnedMoveObject(o) => Some((o.0, o.2)),
+            InputObjectKind::MovePackage(_) | InputObjectKind::SharedMoveObject { .. } => None,
+        })
+        .collect::<HashMap<ObjectID, ObjectDigest>>();
+    let unwrapped_then_deleted = effects
+        .unwrapped_then_deleted()
+        .iter()
+        .map(|e| e.0)
+        .collect::<HashSet<_>>();
+    let all_balance_changes = custom_get_balance_changes(
+        object_provider,
+        &effects
+            .modified_at_versions()
+            .into_iter()
+            .filter_map(|(id, version)| {
+                if matches!(mocked_coin, Some(coin) if id == coin) {
+                    return None;
+                }
+                // We won't be able to get dynamic object from object provider today
+                if unwrapped_then_deleted.contains(&id) {
+                    return None;
+                }
+                Some((id, version, input_objs_to_digest.get(&id).cloned()))
+            })
+            .collect::<Vec<_>>(),
+        &all_mutated,
+    )
+    .await?;
+
+    // merge duplicated balance changes on same object
+    let mut all_balance_changes_with_status = vec![];
+    all_balance_changes.into_iter().for_each(|bc| {
+        let old_owner = input_objects_to_owner.get(&bc.object_id);
+        // Check if input owner changed
+        if old_owner.is_some() && old_owner != Some(&bc.owner) {
+            all_balance_changes_with_status.push(BalanceChangeWithStatus {
+                object_id: bc.object_id.to_canonical_string(true),
+                owner: bc.owner,
+                coin_type: bc.coin_type,
+                amount: bc.amount,
+                status: ObjectStatus::Created,
+            });
+            return;
+        }
+        let old_owner = output_objects_to_owner.get(&bc.object_id);
+        // Check if output owner changed
+        if old_owner.is_some() && old_owner != Some(&bc.owner) {
+            all_balance_changes_with_status.push(BalanceChangeWithStatus {
+                object_id: bc.object_id.to_canonical_string(true),
+                owner: bc.owner,
+                coin_type: bc.coin_type,
+                amount: bc.amount,
+                status: ObjectStatus::Deleted,
+            });
+            return;
+        }
+        all_balance_changes_with_status.push(BalanceChangeWithStatus {
+            object_id: bc.object_id.to_canonical_string(true),
+            owner: bc.owner,
+            coin_type: bc.coin_type,
+            amount: bc.amount,
+            status: status_map
+                .get(&bc.object_id)
+                .cloned()
+                .expect("Use of object not in transaction effects"),
+        });
+    });
+
+    return Ok(all_balance_changes_with_status);
+}
+
+pub async fn custom_get_balance_changes<P: ObjectProvider<Error = E>, E>(
+    object_provider: &P,
+    modified_at_version: &[(ObjectID, SequenceNumber, Option<ObjectDigest>)],
+    all_mutated: &[(ObjectID, SequenceNumber, Option<ObjectDigest>)],
+) -> Result<Vec<CustomBalanceChange>, E> {
+    // 1. subtract all input coins
+    let balances = custom_fetch_coins(object_provider, modified_at_version)
+        .await?
+        .into_iter()
+        .fold(
+            BTreeMap::<_, i128>::new(),
+            |mut acc, (owner, type_, object_id, amount)| {
+                *acc.entry((owner, type_, object_id)).or_default() -= amount as i128;
+                acc
+            },
+        );
+    // 2. add all mutated coins
+    let balances = custom_fetch_coins(object_provider, all_mutated)
+        .await?
+        .into_iter()
+        .fold(balances, |mut acc, (owner, type_, object_id, amount)| {
+            *acc.entry((owner, type_, object_id)).or_default() += amount as i128;
+            acc
+        });
+
+    Ok(balances
+        .into_iter()
+        .filter_map(|((owner, coin_type, object_id), amount)| {
+            Some(CustomBalanceChange {
+                object_id,
+                owner,
+                coin_type,
+                amount,
+            })
+        })
+        .collect())
+}
+
+async fn custom_fetch_coins<P: ObjectProvider<Error = E>, E>(
+    object_provider: &P,
+    objects: &[(ObjectID, SequenceNumber, Option<ObjectDigest>)],
+) -> Result<Vec<(Owner, TypeTag, ObjectID, u64)>, E> {
+    let mut all_mutated_coins = vec![];
+    for (id, version, digest_opt) in objects {
+        // TODO: use multi get object
+        let o = object_provider.get_object(id, version).await?;
+        if let Some(type_) = o.type_() {
+            if type_.is_coin() {
+                if let Some(digest) = digest_opt {
+                    assert_eq!(
+                        *digest,
+                        o.digest(),
+                        "Object digest mismatch--got bad data from object_provider?"
+                    )
+                }
+                let [coin_type]: [TypeTag; 1] =
+                    type_.clone().into_type_params().try_into().unwrap();
+                all_mutated_coins.push((
+                    o.owner,
+                    coin_type,
+                    o.id(),
+                    // // we know this is a coin, safe to unwrap
+                    // HW // NB: THIS IS FUCKING MYSTEN LABS CODE IF THIS CRASHES FUCK EM
                     Coin::extract_balance_if_coin(&o).unwrap().unwrap(),
                 ))
             }

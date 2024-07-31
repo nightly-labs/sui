@@ -16,6 +16,7 @@ use std::path::PathBuf;
 use std::pin::Pin;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
+use sui_types::nats_queue::NatsQueueSender;
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
 
@@ -115,6 +116,7 @@ pub async fn setup_single_workflow<W: Worker + 'static>(
     oneshot::Sender<()>,
 )> {
     let (exit_sender, exit_receiver) = oneshot::channel();
+
     // let metrics = DataIngestionMetrics::new(&Registry::new());
     let progress_store = ShimProgressStore(initial_checkpoint_number);
     // let mut executor = IndexerExecutor::new(progress_store, 1, metrics);

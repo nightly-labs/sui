@@ -7,7 +7,10 @@
 use async_trait::async_trait;
 use mysten_metrics::monitored_scope;
 use mysten_metrics::spawn_monitored_task;
+use sui_json_rpc::get_balance_changes_with_status_from_effect;
+use sui_json_rpc_types::ObjectStatus;
 use sui_rest_api::CheckpointData;
+use sui_types::object::Owner;
 use tokio::sync::watch;
 
 use std::collections::HashMap;
@@ -207,6 +210,51 @@ impl TxChangesProcessor {
                 )
             }),
             None,
+        )
+        .await?;
+        Ok((balance_change, object_change))
+    }
+
+    pub(crate) async fn custom_get_changes(
+        &self,
+        tx: &TransactionData,
+        effects: &TransactionEffects,
+        tx_digest: &TransactionDigest,
+        status_map: HashMap<ObjectID, ObjectStatus>,
+        input_objects_to_owner: &HashMap<ObjectID, Owner>,
+        output_objects_to_owner: &HashMap<ObjectID, Owner>,
+    ) -> IndexerResult<(
+        Vec<sui_json_rpc_types::BalanceChangeWithStatus>,
+        Vec<IndexedObjectChange>,
+    )> {
+        let _timer = self
+            .metrics
+            .indexing_tx_object_changes_latency
+            .start_timer();
+        let object_change: Vec<_> = get_object_changes(
+            self,
+            tx.sender(),
+            effects.modified_at_versions(),
+            effects.all_changed_objects(),
+            effects.all_removed_objects(),
+        )
+        .await?
+        .into_iter()
+        .map(IndexedObjectChange::from)
+        .collect();
+        let balance_change = get_balance_changes_with_status_from_effect(
+            self,
+            effects,
+            tx.input_objects().unwrap_or_else(|e| {
+                panic!(
+                    "Checkpointed tx {:?} has inavlid input objects: {e}",
+                    tx_digest,
+                )
+            }),
+            None,
+            status_map,
+            input_objects_to_owner,
+            output_objects_to_owner,
         )
         .await?;
         Ok((balance_change, object_change))

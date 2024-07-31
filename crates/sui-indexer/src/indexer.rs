@@ -3,10 +3,13 @@
 
 use std::collections::HashMap;
 use std::env;
+use std::sync::Arc;
 
 use anyhow::Result;
 use diesel::r2d2::R2D2Connection;
+use odin::Odin;
 use prometheus::Registry;
+use sui_types::nats_queue::NatsQueueSender;
 use tokio::sync::oneshot;
 use tokio_util::sync::CancellationToken;
 use tracing::info;
@@ -46,6 +49,7 @@ impl Indexer {
         config: &IndexerConfig,
         store: S,
         metrics: IndexerMetrics,
+        queue_sender: NatsQueueSender,
     ) -> Result<(), IndexerError> {
         let snapshot_config = SnapshotLagConfig::default();
         Indexer::start_writer_with_config::<S, T>(
@@ -54,6 +58,7 @@ impl Indexer {
             metrics,
             snapshot_config,
             CancellationToken::new(),
+            queue_sender,
         )
         .await
     }
@@ -67,6 +72,7 @@ impl Indexer {
         metrics: IndexerMetrics,
         snapshot_config: SnapshotLagConfig,
         cancel: CancellationToken,
+        mut queue_sender: NatsQueueSender,
     ) -> Result<(), IndexerError> {
         info!(
             "Sui Indexer Writer (version {:?}) started...",
@@ -124,8 +130,19 @@ impl Indexer {
             1,
             // DataIngestionMetrics::new(&Registry::new()),
         );
-        let worker =
-            new_handlers::<S, T>(store, metrics, primary_watermark, cancel.clone()).await?;
+
+        // Set init checkpoint for primary worker to the latest checkpoint sequence number.
+        queue_sender.init_checkpoint = primary_watermark;
+        queue_sender.run().await;
+
+        let worker = new_handlers::<S, T>(
+            store,
+            metrics,
+            primary_watermark,
+            cancel.clone(),
+            queue_sender,
+        )
+        .await?;
         let worker_pool = WorkerPool::new(worker, "primary".to_string(), download_queue_size);
 
         executor.register(worker_pool).await?;
