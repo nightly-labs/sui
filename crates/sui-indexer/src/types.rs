@@ -354,6 +354,39 @@ pub struct IndexedTransaction {
 }
 
 #[derive(Debug, Clone)]
+pub struct CustomIndexedTransaction {
+    pub tx_sequence_number: u64,
+    pub tx_digest: TransactionDigest,
+    pub sender_signed_data: SenderSignedData,
+    pub effects: TransactionEffects,
+    pub checkpoint_sequence_number: u64,
+    pub timestamp_ms: u64,
+    pub object_changes: Vec<IndexedObjectChange>,
+    pub balance_change: Vec<sui_json_rpc_types::BalanceChangeWithStatus>,
+    pub events: Vec<sui_types::event::Event>,
+    pub transaction_kind: TransactionKind,
+    pub successful_tx_num: u64,
+}
+
+impl From<CustomIndexedTransaction> for IndexedTransaction {
+    fn from(tx: CustomIndexedTransaction) -> Self {
+        Self {
+            tx_sequence_number: tx.tx_sequence_number,
+            tx_digest: tx.tx_digest,
+            sender_signed_data: tx.sender_signed_data,
+            effects: tx.effects,
+            checkpoint_sequence_number: tx.checkpoint_sequence_number,
+            timestamp_ms: tx.timestamp_ms,
+            object_changes: tx.object_changes,
+            balance_change: tx.balance_change.into_iter().map(|bc| bc.into()).collect(),
+            events: tx.events,
+            transaction_kind: tx.transaction_kind,
+            successful_tx_num: tx.successful_tx_num,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct TxIndex {
     pub tx_sequence_number: u64,
     pub transaction_digest: TransactionDigest,
