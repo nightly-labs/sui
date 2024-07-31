@@ -204,6 +204,7 @@ pub mod setup_postgres {
     use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
     use prometheus::Registry;
     use secrecy::ExposeSecret;
+    use sui_types::nats_queue::NatsQueueSender;
     use tracing::{error, info};
 
     const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/pg");
@@ -257,6 +258,7 @@ pub mod setup_postgres {
     pub async fn setup(
         indexer_config: IndexerConfig,
         registry: Registry,
+        queue_sender: NatsQueueSender,
     ) -> Result<(), IndexerError> {
         let db_url_secret = indexer_config.get_db_url().map_err(|e| {
             IndexerError::PgPoolConnectionError(format!(
@@ -318,6 +320,7 @@ pub mod setup_postgres {
                 &indexer_config,
                 store,
                 indexer_metrics,
+                queue_sender,
             )
             .await;
         } else if indexer_config.rpc_server_worker {

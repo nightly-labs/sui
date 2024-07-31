@@ -4,6 +4,7 @@
 use diesel::connection::SimpleConnection;
 use mysten_metrics::init_metrics;
 use secrecy::ExposeSecret;
+use sui_types::nats_queue::NatsQueueSender;
 use tokio::task::JoinHandle;
 use tokio_util::sync::CancellationToken;
 
@@ -45,6 +46,7 @@ pub async fn start_test_indexer<T: R2D2Connection + Send + 'static>(
     rpc_url: String,
     reader_writer_config: ReaderWriterConfig,
     data_ingestion_path: PathBuf,
+    queue_sender: NatsQueueSender,
 ) -> (PgIndexerStore<T>, JoinHandle<Result<(), IndexerError>>) {
     start_test_indexer_impl(
         db_url,
@@ -53,6 +55,7 @@ pub async fn start_test_indexer<T: R2D2Connection + Send + 'static>(
         None,
         Some(data_ingestion_path),
         CancellationToken::new(),
+        queue_sender,
     )
     .await
 }
@@ -64,6 +67,7 @@ pub async fn start_test_indexer_impl<T: R2D2Connection + 'static>(
     new_database: Option<String>,
     data_ingestion_path: Option<PathBuf>,
     cancel: CancellationToken,
+    queue_sender: NatsQueueSender,
 ) -> (PgIndexerStore<T>, JoinHandle<Result<(), IndexerError>>) {
     // Reduce the connection pool size to 10 for testing
     // to prevent maxing out
@@ -155,6 +159,7 @@ pub async fn start_test_indexer_impl<T: R2D2Connection + 'static>(
                     indexer_metrics,
                     snapshot_config,
                     cancel,
+                    queue_sender,
                 )
                 .await
             })

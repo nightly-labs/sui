@@ -6933,7 +6933,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=dependencies#a96959bb1d0656ed796a013518e5f799601ef176"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -9603,7 +9603,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=dependencies#a96959bb1d0656ed796a013518e5f799601ef176"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
 dependencies = [
  "bitcode",
  "dotenvy",
@@ -10060,6 +10060,7 @@ dependencies = [
  "mysten-metrics",
  "notify",
  "object_store",
+ "odin",
  "prometheus",
  "rand 0.8.5",
  "serde",
@@ -11075,6 +11076,7 @@ dependencies = [
  "num-bigint 0.4.4",
  "num-traits",
  "num_enum 0.6.1",
+ "odin",
  "once_cell",
  "parking_lot 0.12.1",
  "prometheus",
@@ -11099,6 +11101,7 @@ dependencies = [
  "sui-sdk 0.0.0",
  "tap",
  "thiserror",
+ "tokio",
  "tonic 0.11.0",
  "tracing",
  "typed-store-error",
