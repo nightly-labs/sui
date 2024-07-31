@@ -601,7 +601,7 @@ dependencies = [
  "portable-atomic 1.7.0",
  "rand 0.8.5",
  "regex",
- "ring 0.17.8",
+ "ring 0.17.3",
  "rustls-native-certs 0.7.1",
  "rustls-pemfile 2.1.2",
  "rustls-webpki 0.102.6",
@@ -1950,7 +1950,7 @@ dependencies = [
  "anstream",
  "anstyle",
  "clap_lex",
- "strsim 0.11.0",
+ "strsim 0.11.1",
  "terminal_size",
 ]
 
@@ -6626,7 +6626,7 @@ dependencies = [
  "data-encoding",
  "ed25519 2.2.3",
  "ed25519-dalek",
- "getrandom 0.2.15",
+ "getrandom 0.2.9",
  "log",
  "rand 0.8.5",
  "signatory",
@@ -6970,7 +6970,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=dependencies#a96959bb1d0656ed796a013518e5f799601ef176"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -8304,9 +8304,9 @@ dependencies = [
 
 [[package]]
 name = "rayon"
-version = "1.6.1"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6db3a213adf02b3bcfd2d3846bb41cb22857d131789e01df434fb7e7bc0759b7"
+checksum = "b418a60154510ca1a002a752ca9714984e21e4241e804d32555251faf8b78ffa"
 dependencies = [
  "either",
  "rayon-core",
@@ -8314,14 +8314,12 @@ dependencies = [
 
 [[package]]
 name = "rayon-core"
-version = "1.10.1"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cac410af5d00ab6884528b4ab69d1e8e146e8d471201800fa1b4524126de6ad3"
+checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
 dependencies = [
- "crossbeam-channel",
  "crossbeam-deque",
  "crossbeam-utils",
- "num_cpus",
 ]
 
 [[package]]
@@ -8750,7 +8748,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c58f8c84392efc0a126acce10fa59ff7b3d2ac06ab451a33f2741989b806b044"
 dependencies = [
  "once_cell",
- "ring 0.17.8",
+ "ring 0.17.3",
  "rustls-pki-types",
  "rustls-webpki 0.102.6",
  "subtle",
@@ -8833,7 +8831,7 @@ version = "0.102.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e6b52d4fda176fd835fdc55a835d4a89b8499cad995885a21149d5ad62f852e"
 dependencies = [
- "ring 0.17.8",
+ "ring 0.17.3",
  "rustls-pki-types",
  "untrusted 0.9.0",
 ]
@@ -9258,7 +9256,7 @@ dependencies = [
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.1.0",
+ "indexmap 2.2.6",
  "serde",
  "serde_derive",
  "serde_json",
@@ -9712,14 +9710,14 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "strsim"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ee073c9e4cd00e28217186dbe12796d692868f432bf2e97ee73bed0c56dfa01"
+checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=dependencies#a96959bb1d0656ed796a013518e5f799601ef176"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
 dependencies = [
  "bitcode",
  "dotenvy",
@@ -10197,6 +10195,7 @@ dependencies = [
  "mysten-metrics",
  "notify",
  "object_store",
+ "odin",
  "prometheus",
  "rand 0.8.5",
  "serde",
@@ -11236,6 +11235,7 @@ dependencies = [
  "num-bigint 0.4.4",
  "num-traits",
  "num_enum 0.6.1",
+ "odin",
  "once_cell",
  "p256",
  "parking_lot 0.12.1",

@@ -20,6 +20,7 @@ use sui_types::dynamic_field::DynamicFieldType;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSequenceNumber,
 };
+use sui_types::nats_queue::NatsQueueSender;
 use sui_types::object::Object;
 use tokio_util::sync::CancellationToken;
 
@@ -66,6 +67,7 @@ pub async fn new_handlers<S, T>(
     metrics: IndexerMetrics,
     next_checkpoint_sequence_number: CheckpointSequenceNumber,
     cancel: CancellationToken,
+    queue_sender: NatsQueueSender,
 ) -> Result<CheckpointHandler<S, T>, IndexerError>
 where
     S: IndexerStore + Clone + Sync + Send + 'static,
@@ -100,6 +102,7 @@ where
         metrics,
         indexed_checkpoint_sender,
         package_tx,
+        queue_sender,
     ))
 }
 
@@ -111,6 +114,7 @@ pub struct CheckpointHandler<S, T: R2D2Connection + 'static> {
     // they will be periodically GCed to avoid OOM.
     package_buffer: Arc<Mutex<IndexingPackageBuffer>>,
     package_resolver: Arc<Resolver<PackageStoreWithLruCache<InterimPackageResolver<T>>>>,
+    nats_queue: NatsQueueSender,
 }
 
 #[async_trait]
@@ -171,6 +175,7 @@ where
         metrics: IndexerMetrics,
         indexed_checkpoint_sender: mysten_metrics::metered_channel::Sender<CheckpointDataToCommit>,
         package_tx: watch::Receiver<Option<CheckpointSequenceNumber>>,
+        queue_sender: NatsQueueSender,
     ) -> Self {
         let package_buffer = IndexingPackageBuffer::start(package_tx);
         let pg_blocking_cp = Self::pg_blocking_cp(state.clone()).unwrap();
@@ -188,6 +193,7 @@ where
             indexed_checkpoint_sender,
             package_buffer,
             package_resolver,
+            nats_queue: queue_sender,
         }
     }
 

@@ -16,6 +16,7 @@ use std::path::PathBuf;
 use std::pin::Pin;
 use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
+use sui_types::nats_queue::NatsQueueSender;
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
 
