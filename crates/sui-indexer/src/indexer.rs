@@ -72,7 +72,7 @@ impl Indexer {
         metrics: IndexerMetrics,
         snapshot_config: SnapshotLagConfig,
         cancel: CancellationToken,
-        queue_sender: NatsQueueSender,
+        mut queue_sender: NatsQueueSender,
     ) -> Result<(), IndexerError> {
         info!(
             "Sui Indexer Writer (version {:?}) started...",

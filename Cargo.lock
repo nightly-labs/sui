@@ -6933,7 +6933,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ad438b1#ad438b1576469d76f9b2e7428a58fb27dfe1c561"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -9603,7 +9603,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?branch=sui-indexer-nats-update#6be6c61597198176244fd364110a77661e0ceb64"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ad438b1#ad438b1576469d76f9b2e7428a58fb27dfe1c561"
 dependencies = [
  "bitcode",
  "dotenvy",
@@ -12136,7 +12136,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
- "rand 0.8.5",
+ "rand 0.7.3",
  "static_assertions",
 ]
 

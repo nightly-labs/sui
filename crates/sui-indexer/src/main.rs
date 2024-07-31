@@ -43,12 +43,8 @@ async fn main() -> Result<(), IndexerError> {
     let queue_sender = nats_queue(odin_connection.clone());
 
     #[cfg(feature = "postgres-feature")]
-    sui_indexer::db::setup_postgres::setup(
-        indexer_config.clone(),
-        registry.clone(),
-        queue_sender.clone(),
-    )
-    .await?;
+    sui_indexer::db::setup_postgres::setup(indexer_config.clone(), registry.clone(), queue_sender)
+        .await?;
 
     #[cfg(feature = "mysql-feature")]
     #[cfg(not(feature = "postgres-feature"))]

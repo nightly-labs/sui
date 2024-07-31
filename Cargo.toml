@@ -697,7 +697,7 @@ sui-execution = { path = "sui-execution" }
 # move-bytecode-verifier = { path = "external-crates/move/move-bytecode-verifier" }
 
 
-odin = { git = "ssh://git@github.com/nightly-labs/alexandria.git", branch = "sui-indexer-nats-update", package = "odin" }
+odin = { git = "ssh://git@github.com/nightly-labs/alexandria.git", rev = "ad438b1", package = "odin" }
 
 # suiop dependencies
 docker-api = "0.12.2"
