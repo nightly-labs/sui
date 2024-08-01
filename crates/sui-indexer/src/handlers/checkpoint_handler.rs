@@ -10,7 +10,9 @@ use itertools::Itertools;
 use move_core_types::annotated_value::{MoveStructLayout, MoveTypeLayout};
 use move_core_types::language_storage::{StructTag, TypeTag};
 use mysten_metrics::{get_metrics, spawn_monitored_task};
-use odin::sui_ws::{CoinCreated, CoinMutated, CoinObjectUpdateStatus};
+use odin::sui_ws::{
+    AccountObjectsUpdate, CoinCreated, CoinMutated, CoinObjectUpdateStatus, ObjectChangeUpdate,
+};
 use odin::sui_ws::{SuiWsApiMsg, TokenBalanceUpdate, TokenUpdate};
 use std::collections::{BTreeMap, HashMap};
 use std::sync::{Arc, Mutex};
@@ -443,24 +445,16 @@ where
 
             // Add out custom maps
             let status_map = get_object_status_map(&fx);
-            let input_objects_to_owner = input_objects
-                .iter()
-                .map(|input_object| (input_object.id(), input_object.owner().clone()))
-                .collect::<HashMap<ObjectID, Owner>>();
-            let output_objects_to_owner = output_objects
-                .iter()
-                .map(|output_object| (output_object.id(), output_object.owner().clone()))
-                .collect::<HashMap<ObjectID, Owner>>();
 
-            let (balance_change, object_changes) =
+            let (balance_change, object_changes, custom_object_changes) =
                 TxChangesProcessor::new(&objects, metrics.clone())
                     .custom_get_changes(
                         tx,
                         &fx,
                         &tx_digest,
                         status_map,
-                        &input_objects_to_owner,
-                        &output_objects_to_owner,
+                        &input_objects,
+                        &output_objects,
                     )
                     .await?;
 
@@ -473,6 +467,7 @@ where
                 effects: fx.clone(),
                 object_changes,
                 balance_change,
+                custom_object_changes,
                 events,
                 transaction_kind,
                 successful_tx_num: if fx.status().is_ok() {
@@ -964,6 +959,8 @@ pub fn generate_ws_updates_from_checkpoint_data(
     let block_number = checkpoint_data.checkpoint.sequence_number;
 
     let mut ws_balance_changes: HashMap<String, TokenBalanceUpdate> = HashMap::new();
+    let mut account_object_changes: HashMap<String, AccountObjectsUpdate> = HashMap::new(); // account address -> account object changes
+    let mut objects_changes: Vec<ObjectChangeUpdate> = Vec::new();
 
     // transaction balance changes
     for transaction in checkpoint_data.transactions.iter() {
@@ -1018,13 +1015,40 @@ pub fn generate_ws_updates_from_checkpoint_data(
                 }
             }
         }
+
+        for (change_owner, object_change) in transaction.custom_object_changes.iter() {
+            if let Some(owner) = change_owner {
+                account_object_changes
+                    .entry(owner.to_string())
+                    .or_insert(AccountObjectsUpdate {
+                        sui_address: owner.to_string(),
+                        sequence_number: block_number,
+                        object_changes: HashMap::new(),
+                        timestamp_ms: chrono::Utc::now().timestamp_millis() as u64,
+                    })
+                    .object_changes
+                    .entry(object_change.object_id.clone())
+                    .or_insert(object_change.clone());
+            }
+
+            objects_changes.push(object_change.clone());
+        }
     }
 
-    return (
-        checkpoint_data.checkpoint.sequence_number,
-        ws_balance_changes
-            .into_values()
-            .map(|v| SuiWsApiMsg::TokenBalanceUpdate(v))
-            .collect(),
-    );
+    let updates: Vec<SuiWsApiMsg> = ws_balance_changes
+        .into_values()
+        .map(|v| SuiWsApiMsg::TokenBalanceUpdate(v))
+        .chain(
+            account_object_changes
+                .into_values()
+                .map(|v| SuiWsApiMsg::AccountObjectsUpdate(v)),
+        )
+        .chain(
+            objects_changes
+                .into_iter()
+                .map(|v| SuiWsApiMsg::ObjectUpdate(v)),
+        )
+        .collect();
+
+    return (checkpoint_data.checkpoint.sequence_number, updates);
 }
