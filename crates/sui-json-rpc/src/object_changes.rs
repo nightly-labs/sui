@@ -371,20 +371,20 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                 match output_ownership_map.get(&id.to_string()) {
                     // object still exists aka has changed ownership
                     Some(new_owner) => {
+                        // just in case get old owner from out map
+                        let old_owner = match input_ownership_map.get(&id.to_string()) {
+                            Some(old_owner) => old_owner,
+                            None => {
+                                // Should never happen
+                                warn!(
+                                    "Object ownership change occurred but object not found in input objects, object_id: {}", id
+                                );
+                                continue;
+                            }
+                        };
+
                         if let Some(new_owner) = new_owner {
                             // Sender
-
-                            // just in case get old owner from out map
-                            let old_owner = match input_ownership_map.get(&id.to_string()) {
-                                Some(old_owner) => old_owner,
-                                None => {
-                                    // Should never happen
-                                    warn!(
-                                        "Object ownership change occurred but object not found in input objects, object_id: {}", id
-                                    );
-                                    continue;
-                                }
-                            };
                             custom_object_changes.push((
                                 old_owner.clone(),
                                 ObjectChangeUpdate {
@@ -400,9 +400,9 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                 },
                             ));
                         } else {
-                            // Object was transferred exists but no longer has owner
+                            // Object was transferred, exists but no longer has owner
                             custom_object_changes.push((
-                                None,
+                                old_owner.clone(),
                                 ObjectChangeUpdate {
                                     object_id: id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
