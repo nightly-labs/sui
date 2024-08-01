@@ -10421,6 +10421,7 @@ dependencies = [
  "move-core-types",
  "move-package",
  "mysten-metrics",
+ "odin",
  "once_cell",
  "prometheus",
  "serde",

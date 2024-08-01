@@ -3,6 +3,7 @@
 
 use crate::errors::IndexerError;
 use move_core_types::language_storage::StructTag;
+use odin::sui_ws::ObjectChangeUpdate;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use sui_json_rpc_types::{
@@ -363,6 +364,7 @@ pub struct CustomIndexedTransaction {
     pub timestamp_ms: u64,
     pub object_changes: Vec<IndexedObjectChange>,
     pub balance_change: Vec<sui_json_rpc_types::BalanceChangeWithStatus>,
+    pub custom_object_changes: Vec<(Option<String>, ObjectChangeUpdate)>,
     pub events: Vec<sui_types::event::Event>,
     pub transaction_kind: TransactionKind,
     pub successful_tx_num: u64,
