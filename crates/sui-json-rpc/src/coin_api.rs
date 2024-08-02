@@ -7,6 +7,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use cached::proc_macro::cached;
 use cached::SizedCache;
+use futures::future::join_all;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 use move_core_types::language_storage::{StructTag, TypeTag};
@@ -211,6 +212,23 @@ impl CoinReadApiServer for CoinReadApi {
                 .await
                 .ok();
             Ok(metadata_object.and_then(|v: Object| v.try_into().ok()))
+        })
+    }
+
+    #[instrument(skip(self))]
+    async fn get_coins_metadata(&self, coin_types: Vec<String>) -> RpcResult<Vec<SuiCoinMetadata>> {
+        with_tracing!(async move {
+            let coin_tasks = coin_types
+                .into_iter()
+                .map(|coin_type| async move { self.get_coin_metadata(coin_type).await });
+
+            let metadata: Vec<SuiCoinMetadata> = join_all(coin_tasks)
+                .await
+                .into_iter()
+                .filter_map(|result| result.ok().flatten())
+                .collect();
+
+            Ok(metadata)
         })
     }
 
