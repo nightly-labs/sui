@@ -63,6 +63,14 @@ pub trait CoinReadApi {
         coin_type: String,
     ) -> RpcResult<Option<SuiCoinMetadata>>;
 
+    /// Return metadata(e.g., symbol, decimals) for a all provided coin types
+    #[method(name = "getCoinsMetadata")]
+    async fn get_coins_metadata(
+        &self,
+        /// type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC)
+        coin_types: Vec<String>,
+    ) -> RpcResult<Vec<SuiCoinMetadata>>;
+
     /// Return total supply for a coin
     #[method(name = "getTotalSupply")]
     async fn get_total_supply(
