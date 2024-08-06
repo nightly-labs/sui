@@ -40,6 +40,7 @@ import type {
 	GetCheckpointParams,
 	GetCheckpointsParams,
 	GetCoinMetadataParams,
+	GetCoinsMetadataParams,
 	GetCoinsParams,
 	GetCommitteeInfoParams,
 	GetDynamicFieldObjectParams,
@@ -211,6 +212,13 @@ export class SuiClient {
 		return await this.transport.request({
 			method: 'suix_getCoinMetadata',
 			params: [input.coinType],
+		});
+	}
+
+	async getCoinsMetadata(input: GetCoinsMetadataParams): Promise<CoinMetadata | null> {
+		return await this.transport.request({
+			method: 'suix_getCoinsMetadata',
+			params: [input.coinTypes],
 		});
 	}
 

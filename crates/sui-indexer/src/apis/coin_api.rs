@@ -128,6 +128,17 @@ impl<T: R2D2Connection + 'static> CoinReadApiServer for CoinReadApi<T> {
             .map_err(Into::into)
     }
 
+    async fn get_coins_metadata(&self, coin_types: Vec<String>) -> RpcResult<Vec<SuiCoinMetadata>> {
+        let coin_structs = coin_types
+            .iter()
+            .map(|coin_type| parse_to_struct_tag(coin_type))
+            .collect::<Result<Vec<_>, _>>()?;
+        self.inner
+            .get_coins_metadata_in_blocking_task(coin_structs)
+            .await
+            .map_err(Into::into)
+    }
+
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {
         let coin_struct = parse_to_struct_tag(&coin_type)?;
         if GAS::is_gas(&coin_struct) {

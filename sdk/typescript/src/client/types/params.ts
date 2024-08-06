@@ -212,6 +212,11 @@ export interface GetCoinMetadataParams {
 	/** type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC) */
 	coinType: string;
 }
+/** Return metadata(e.g., symbol, decimals) for a multiple coins */
+export interface GetCoinsMetadataParams {
+	/** type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC) */
+	coinTypes: [string];
+}
 /** Return all Coin<`coin_type`> objects owned by an address. */
 export interface GetCoinsParams {
 	/** the owner's Sui address */
