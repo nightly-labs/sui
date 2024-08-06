@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 use clap::Parser;
-use odin::{get_odin, Odin};
+use odin::{get_odin, ConnectOptions, Odin};
 use sui_types::nats_queue::nats_queue;
 use tracing::info;
 
@@ -39,7 +39,19 @@ async fn main() -> Result<(), IndexerError> {
         indexer_config.rpc_client_url.as_str(),
     )?;
 
-    let odin_connection: Arc<Odin> = Arc::new(get_odin().await);
+    // TODO update on launch
+    let odin = Odin::connect(
+        Some(vec![
+            "nats://localhost:4228".to_string(),
+            "nats://localhost:4229".to_string(),
+        ]),
+        Some(ConnectOptions::with_user_and_password(
+            "alexandria".to_string(),
+            "alexandria".to_string(),
+        )),
+    )
+    .await;
+    let odin_connection: Arc<Odin> = Arc::new(odin);
     let queue_sender = nats_queue(odin_connection.clone());
 
     #[cfg(feature = "postgres-feature")]

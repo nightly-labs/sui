@@ -144,11 +144,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                 Err(_) => None,
             };
 
-            let data = match o.data.try_as_move() {
-                Some(data) => Some(data.clone().into_contents()),
-                None => None,
-            };
-
             match kind {
                 WriteKind::Mutate => {
                     object_changes.push(ObjectChange::Mutated {
@@ -191,7 +186,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                             object_type.to_canonical_string(true),
                                         ),
                                         object_version: Some(version.into()),
-                                        object_bcs: data,
                                         object_metadata: None,
                                         status: ObjectUpdateStatus::Received(Received {
                                             sender_address: old_owner.to_string(),
@@ -208,7 +202,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: object_id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: data,
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Mutated,
                                 },
@@ -222,7 +215,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: object_id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: data,
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Mutated,
                                 },
@@ -264,7 +256,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                                     object_type.to_canonical_string(true),
                                                 ),
                                                 object_version: Some(version.into()),
-                                                object_bcs: data,
                                                 object_metadata: None,
                                                 status: ObjectUpdateStatus::Received(Received {
                                                     sender_address: old_owner.to_string(),
@@ -284,7 +275,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                                 object_type.to_canonical_string(true),
                                             ),
                                             object_version: Some(version.into()),
-                                            object_bcs: data,
                                             object_metadata: None,
                                             status: ObjectUpdateStatus::Mutated,
                                         },
@@ -299,7 +289,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: object_id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: data,
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Created,
                                 },
@@ -313,7 +302,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: object_id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: data,
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Created,
                                 },
@@ -357,11 +345,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                     }),
                 }
 
-                let data = match o.data.try_as_move() {
-                    Some(data) => data.clone().into_contents(),
-                    None => continue,
-                };
-
                 let address_owner = match o.owner.get_owner_address() {
                     Ok(owner) => Some(owner.to_string()),
                     Err(_) => None,
@@ -391,7 +374,7 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: Some(data),
+
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Sent(Sent {
                                         sender_address: new_owner.clone(),
@@ -407,7 +390,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                     object_id: id.to_string(),
                                     object_type_tag: Some(object_type.to_canonical_string(true)),
                                     object_version: Some(version.into()),
-                                    object_bcs: Some(data),
                                     object_metadata: None,
                                     status: ObjectUpdateStatus::Deleted,
                                 },
@@ -422,7 +404,6 @@ pub async fn custom_get_object_changes<P: ObjectProvider<Error = E>, E>(
                                 object_id: id.to_string(),
                                 object_type_tag: Some(object_type.to_canonical_string(true)),
                                 object_version: Some(version.into()),
-                                object_bcs: Some(data),
                                 object_metadata: None,
                                 status: ObjectUpdateStatus::Deleted,
                             },

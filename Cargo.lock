@@ -6970,7 +6970,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ad438b1#ad438b1576469d76f9b2e7428a58fb27dfe1c561"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ce64446#ce64446d5ebe07fa36ab586ab169f50d65f607d1"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -9717,7 +9717,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ad438b1#ad438b1576469d76f9b2e7428a58fb27dfe1c561"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ce64446#ce64446d5ebe07fa36ab586ab169f50d65f607d1"
 dependencies = [
  "bitcode",
  "dotenvy",
