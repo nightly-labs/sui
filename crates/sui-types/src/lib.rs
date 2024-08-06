@@ -68,6 +68,7 @@ pub mod mock_checkpoint_builder;
 pub mod move_package;
 pub mod multisig;
 pub mod multisig_legacy;
+pub mod nats_queue;
 pub mod object;
 pub mod passkey_authenticator;
 pub mod programmable_transaction_builder;

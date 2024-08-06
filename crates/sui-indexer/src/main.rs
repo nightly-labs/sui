@@ -1,7 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
+
 use clap::Parser;
+use odin::{get_odin, ConnectOptions, Odin};
+use sui_types::nats_queue::nats_queue;
 use tracing::info;
 
 use sui_indexer::errors::IndexerError;
@@ -34,8 +38,25 @@ async fn main() -> Result<(), IndexerError> {
         .unwrap(),
         indexer_config.rpc_client_url.as_str(),
     )?;
+
+    // TODO update on launch
+    let odin = Odin::connect(
+        Some(vec![
+            "nats://localhost:4228".to_string(),
+            "nats://localhost:4229".to_string(),
+        ]),
+        Some(ConnectOptions::with_user_and_password(
+            "alexandria".to_string(),
+            "alexandria".to_string(),
+        )),
+    )
+    .await;
+    let odin_connection: Arc<Odin> = Arc::new(odin);
+    let queue_sender = nats_queue(odin_connection.clone());
+
     #[cfg(feature = "postgres-feature")]
-    sui_indexer::db::setup_postgres::setup(indexer_config.clone(), registry.clone()).await?;
+    sui_indexer::db::setup_postgres::setup(indexer_config.clone(), registry.clone(), queue_sender)
+        .await?;
 
     #[cfg(feature = "mysql-feature")]
     #[cfg(not(feature = "postgres-feature"))]

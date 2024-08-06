@@ -7,7 +7,15 @@
 use async_trait::async_trait;
 use mysten_metrics::monitored_scope;
 use mysten_metrics::spawn_monitored_task;
+use odin::sui_ws::ObjectChangeUpdate;
+use sui_json_rpc::custom_get_object_changes;
+use sui_json_rpc::get_balance_changes_with_status_from_effect;
+use sui_json_rpc_types::ObjectStatus;
+use sui_package_resolver::PackageStore;
+use sui_package_resolver::Resolver;
 use sui_rest_api::CheckpointData;
+use sui_types::base_types::SuiAddress;
+use sui_types::object::Owner;
 use tokio::sync::watch;
 
 use std::collections::HashMap;
@@ -210,6 +218,73 @@ impl TxChangesProcessor {
         )
         .await?;
         Ok((balance_change, object_change))
+    }
+
+    pub(crate) async fn custom_get_changes(
+        &self,
+        tx: &TransactionData,
+        effects: &TransactionEffects,
+        tx_digest: &TransactionDigest,
+        status_map: HashMap<ObjectID, ObjectStatus>,
+        input_objects: &Vec<Object>,
+        output_objects: &Vec<Object>,
+    ) -> IndexerResult<(
+        Vec<sui_json_rpc_types::BalanceChangeWithStatus>,
+        Vec<IndexedObjectChange>,
+        Vec<(Option<String>, ObjectChangeUpdate)>,
+    )> {
+        let _timer = self
+            .metrics
+            .indexing_tx_object_changes_latency
+            .start_timer();
+        let (original_object_change, custom_object_change): (Vec<_>, Vec<_>) =
+            custom_get_object_changes(
+                self,
+                tx.sender(),
+                effects.modified_at_versions(),
+                effects.all_changed_objects(),
+                effects.all_removed_objects(),
+                &input_objects,
+                &output_objects,
+            )
+            .await?;
+
+        let indexed_objects_changes = original_object_change
+            .into_iter()
+            .map(IndexedObjectChange::from)
+            .collect::<Vec<_>>();
+
+        ///////////////////////////////////////////////// Moved here from the parent function index_transactions
+        let input_objects_to_owner = input_objects
+            .iter()
+            .map(|input_object| (input_object.id(), input_object.owner().clone()))
+            .collect::<HashMap<ObjectID, Owner>>();
+        let output_objects_to_owner = output_objects
+            .iter()
+            .map(|output_object| (output_object.id(), output_object.owner().clone()))
+            .collect::<HashMap<ObjectID, Owner>>();
+        /////////////////////////////////////////////////
+
+        let balance_change = get_balance_changes_with_status_from_effect(
+            self,
+            effects,
+            tx.input_objects().unwrap_or_else(|e| {
+                panic!(
+                    "Checkpointed tx {:?} has inavlid input objects: {e}",
+                    tx_digest,
+                )
+            }),
+            None,
+            status_map,
+            &input_objects_to_owner,
+            &output_objects_to_owner,
+        )
+        .await?;
+        Ok((
+            balance_change,
+            indexed_objects_changes,
+            custom_object_change,
+        ))
     }
 }
 
