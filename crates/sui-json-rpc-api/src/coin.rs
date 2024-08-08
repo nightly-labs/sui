@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{Balance, CoinPage, SuiCoinMetadata};
@@ -70,6 +72,13 @@ pub trait CoinReadApi {
         /// type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC)
         coin_types: Vec<String>,
     ) -> RpcResult<Vec<SuiCoinMetadata>>;
+
+    #[method(name = "getCoinsMetadata2")]
+    async fn get_coins_metadata2(
+        &self,
+        /// type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC)
+        coin_types: Vec<String>,
+    ) -> RpcResult<HashMap<String, SuiCoinMetadata>>;
 
     /// Return total supply for a coin
     #[method(name = "getTotalSupply")]

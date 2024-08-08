@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+
 use crate::indexer_reader::IndexerReader;
 use async_trait::async_trait;
 use diesel::r2d2::R2D2Connection;
@@ -137,6 +139,13 @@ impl<T: R2D2Connection + 'static> CoinReadApiServer for CoinReadApi<T> {
             .get_coins_metadata_in_blocking_task(coin_structs)
             .await
             .map_err(Into::into)
+    }
+
+    async fn get_coins_metadata2(
+        &self,
+        coin_types: Vec<String>,
+    ) -> RpcResult<HashMap<String, SuiCoinMetadata>> {
+        return Ok(HashMap::new());
     }
 
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {

@@ -233,6 +233,66 @@ impl CoinReadApiServer for CoinReadApi {
     }
 
     #[instrument(skip(self))]
+    async fn get_coins_metadata2(
+        &self,
+        coin_types: Vec<String>,
+    ) -> RpcResult<HashMap<String, SuiCoinMetadata>> {
+        with_tracing!(async move {
+            let coin_tasks = coin_types.into_iter().map(|coin_type| async move {
+                // Code from get_coin_metadata but slightly changed for a different return type,
+                // #[instrument(skip(self))]
+                // async fn get_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
+                //     with_tracing!(async move {
+                //         let coin_struct = parse_to_struct_tag(&coin_type)?;
+                //         let metadata_object = self
+                //             .internal
+                //             .find_package_object(
+                //                 &coin_struct.address.into(),
+                //                 CoinMetadata::type_(coin_struct),
+                //             )
+                //             .await
+                //             .ok();
+                //         Ok(metadata_object.and_then(|v: Object| v.try_into().ok()))
+                //     })
+                // }
+
+                // original: RpcResult<Option<SuiCoinMetadata>>
+                // new: RpcResult<(String, Option<SuiCoinMetadata>)>
+
+                match parse_to_struct_tag(&coin_type) {
+                    Ok(coin_struct) => {
+                        let metadata_object = self
+                            .internal
+                            .find_package_object(
+                                &coin_struct.address.into(),
+                                CoinMetadata::type_(coin_struct),
+                            )
+                            .await
+                            .ok();
+
+                        Some((
+                            coin_type,
+                            metadata_object.and_then(|v: Object| v.try_into().ok()),
+                        ))
+                    }
+                    Err(_) => None,
+                }
+            });
+
+            let metadata: HashMap<String, SuiCoinMetadata> = join_all(coin_tasks)
+                .await
+                .into_iter()
+                .filter_map(|result| match result {
+                    Some((coin_type, Some(metadata))) => Some((coin_type, metadata)),
+                    _ => None,
+                })
+                .collect();
+
+            Ok(metadata)
+        })
+    }
+
+    #[instrument(skip(self))]
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {
         with_tracing!(async move {
             let coin_struct = parse_to_struct_tag(&coin_type)?;

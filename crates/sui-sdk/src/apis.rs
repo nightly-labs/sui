@@ -7,6 +7,7 @@ use futures::StreamExt;
 use futures_core::Stream;
 use jsonrpsee::core::client::Subscription;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::future;
 use std::sync::Arc;
 use std::time::Instant;
@@ -981,6 +982,13 @@ impl CoinReadApi {
         coin_types: Vec<String>,
     ) -> SuiRpcResult<Vec<SuiCoinMetadata>> {
         Ok(self.api.http.get_coins_metadata(coin_types).await?)
+    }
+
+    pub async fn get_coins_metadata2(
+        &self,
+        coin_types: Vec<String>,
+    ) -> SuiRpcResult<HashMap<String, SuiCoinMetadata>> {
+        Ok(self.api.http.get_coins_metadata2(coin_types).await?)
     }
 
     /// Return the total supply for a given coin type, or an error upon failure.

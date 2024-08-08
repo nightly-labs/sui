@@ -301,6 +301,10 @@ async fn process_request<L: Logger>(
 
     let id = req.id;
 
+    println!("name: {}", name);
+    println!("params: {:?}", params);
+    println!("id: {:?}", id);
+
     let response = match methods.method_with_name(name) {
         None => {
             logger.on_call(
