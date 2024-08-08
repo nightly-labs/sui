@@ -976,6 +976,13 @@ impl CoinReadApi {
         Ok(self.api.http.get_coin_metadata(coin_type).await?)
     }
 
+    pub async fn get_coins_metadata(
+        &self,
+        coin_types: Vec<String>,
+    ) -> SuiRpcResult<Vec<SuiCoinMetadata>> {
+        Ok(self.api.http.get_coins_metadata(coin_types).await?)
+    }
+
     /// Return the total supply for a given coin type, or an error upon failure.
     ///
     /// # Examples

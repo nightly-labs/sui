@@ -115,6 +115,7 @@ impl RpcExampleProvider {
             self.suix_get_all_coins(),
             self.suix_get_balance(),
             self.suix_get_coin_metadata(),
+            self.suix_get_coins_metadata(),
             self.sui_get_latest_checkpoint_sequence_number(),
             self.suix_get_coins(),
             self.suix_get_total_supply(),
@@ -924,6 +925,29 @@ impl RpcExampleProvider {
             "suix_getCoinMetadata",
             vec![ExamplePairing::new(
                 "Gets the metadata for the coin type in the request.",
+                vec![(
+                    "coin_type",
+                    json!("0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC".to_string()),
+                )],
+                json!(result),
+            )],
+        )
+    }
+
+    fn suix_get_coins_metadata(&mut self) -> Examples {
+        let result = vec![SuiCoinMetadata {
+            decimals: 9,
+            name: "Usdc".to_string(),
+            symbol: "USDC".to_string(),
+            description: "Stable coin.".to_string(),
+            icon_url: None,
+            id: Some(ObjectID::new(self.rng.gen())),
+        }];
+
+        Examples::new(
+            "suix_getCoinMetadata",
+            vec![ExamplePairing::new(
+                "Gets the metadata for the coin types in the request.",
                 vec![(
                     "coin_type",
                     json!("0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC".to_string()),

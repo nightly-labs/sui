@@ -3226,6 +3226,52 @@
       ]
     },
     {
+      "name": "suix_getCoinsMetadata",
+      "tags": [
+        {
+          "name": "Coin Query API"
+        }
+      ],
+      "description": "Return metadata(e.g., symbol, decimals) for all coins",
+      "params": [
+        {
+          "name": "coin_types",
+          "description": "type name for the coins (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC)",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "Vec<SuiCoinMetadata>",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/SuiCoinMetadata"
+          }
+        }
+      },
+      "examples": [
+        {
+          "name": "Gets the metadata for all coins.",
+          "result": {
+            "name": "Result",
+            "value": [
+              {
+                "decimals": 9,
+                "name": "Usdc",
+                "symbol": "USDC",
+                "description": "Stable coin.",
+                "iconUrl": null,
+                "id": "0x6d907beaa3a49db57bdfdb3557e6d405cbf01c293a53e01457d65e92b5d8dd68"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "suix_getCoins",
       "tags": [
         {
