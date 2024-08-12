@@ -3,8 +3,10 @@
 
 use super::config::{ClusterTestOpt, Env};
 use async_trait::async_trait;
+use odin::{ConnectOptions, Odin};
 use std::net::SocketAddr;
 use std::path::Path;
+use std::sync::Arc;
 use sui_config::Config;
 use sui_config::{PersistedConfig, SUI_KEYSTORE_FILENAME, SUI_NETWORK_CONFIG};
 use sui_graphql_rpc::config::ConnectionConfig;
@@ -20,6 +22,7 @@ use sui_types::base_types::SuiAddress;
 use sui_types::crypto::KeypairTraits;
 use sui_types::crypto::SuiKeyPair;
 use sui_types::crypto::{get_key_pair, AccountKeyPair};
+use sui_types::nats_queue::nats_queue;
 use tempfile::tempdir;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tracing::info;
@@ -226,14 +229,43 @@ impl Cluster for LocalNewCluster {
         if let (Some(pg_address), Some(indexer_address)) =
             (options.pg_address.clone(), indexer_address)
         {
+            let odin = Odin::connect(
+                Some(vec![
+                    "nats://localhost:4228".to_string(),
+                    "nats://localhost:4229".to_string(),
+                ]),
+                Some(ConnectOptions::with_user_and_password(
+                    "alexandria".to_string(),
+                    "alexandria".to_string(),
+                )),
+            )
+            .await;
+            let odin_connection: Arc<Odin> = Arc::new(odin);
+            let queue_sender = nats_queue(odin_connection.clone());
+
             // Start in writer mode
             start_test_indexer::<diesel::PgConnection>(
                 Some(pg_address.clone()),
                 fullnode_url.clone(),
                 ReaderWriterConfig::writer_mode(None),
                 data_ingestion_path.clone(),
+                queue_sender,
             )
             .await;
+
+            let odin = Odin::connect(
+                Some(vec![
+                    "nats://localhost:4228".to_string(),
+                    "nats://localhost:4229".to_string(),
+                ]),
+                Some(ConnectOptions::with_user_and_password(
+                    "alexandria".to_string(),
+                    "alexandria".to_string(),
+                )),
+            )
+            .await;
+            let odin_connection: Arc<Odin> = Arc::new(odin);
+            let queue_sender = nats_queue(odin_connection.clone());
 
             // Start in reader mode
             start_test_indexer::<diesel::PgConnection>(
@@ -241,6 +273,7 @@ impl Cluster for LocalNewCluster {
                 fullnode_url.clone(),
                 ReaderWriterConfig::reader_mode(indexer_address.to_string()),
                 data_ingestion_path,
+                queue_sender,
             )
             .await;
         }
