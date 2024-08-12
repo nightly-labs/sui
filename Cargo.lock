@@ -770,12 +770,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ascii_utils"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71938f30533e4d95a6d17aa530939da3842c2ab6f4f84b9dae68447e4129f74a"
-
-[[package]]
 name = "asn1-rs"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -834,7 +828,7 @@ version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "942c7cd7ae39e91bde4820d74132e9862e62c2f386c3aa90ccf55949f5bad63a"
 dependencies = [
- "brotli 3.3.4",
+ "brotli",
  "flate2",
  "futures-core",
  "memchr",
@@ -853,105 +847,6 @@ dependencies = [
  "memchr",
  "pin-project-lite",
  "tokio",
-]
-
-[[package]]
-name = "async-graphql"
-version = "6.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "298a5d587d6e6fdb271bf56af2dc325a80eb291fd0fc979146584b9a05494a8c"
-dependencies = [
- "async-graphql-derive",
- "async-graphql-parser",
- "async-graphql-value",
- "async-stream",
- "async-trait",
- "base64 0.13.1",
- "bytes",
- "chrono",
- "fast_chemail",
- "fnv",
- "futures-channel",
- "futures-timer",
- "futures-util",
- "handlebars",
- "http 0.2.9",
- "indexmap 2.2.6",
- "lru 0.7.8",
- "mime",
- "multer",
- "num-traits",
- "once_cell",
- "opentelemetry 0.21.0",
- "pin-project-lite",
- "regex",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "static_assertions",
- "tempfile",
- "thiserror",
- "tracing",
- "tracing-futures",
-]
-
-[[package]]
-name = "async-graphql-axum"
-version = "6.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01a1c20a2059bffbc95130715b23435a05168c518fba9709c81fa2a38eed990c"
-dependencies = [
- "async-graphql",
- "async-trait",
- "axum",
- "bytes",
- "futures-util",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tokio-util 0.7.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "tower-service",
-]
-
-[[package]]
-name = "async-graphql-derive"
-version = "6.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7f329c7eb9b646a72f70c9c4b516c70867d356ec46cb00dcac8ad343fd006b0"
-dependencies = [
- "Inflector",
- "async-graphql-parser",
- "darling 0.20.10",
- "proc-macro-crate",
- "proc-macro2 1.0.78",
- "quote 1.0.35",
- "strum 0.25.0",
- "syn 2.0.48",
- "thiserror",
-]
-
-[[package]]
-name = "async-graphql-parser"
-version = "6.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6139181845757fd6a73fbb8839f3d036d7150b798db0e9bb3c6e83cdd65bd53b"
-dependencies = [
- "async-graphql-value",
- "pest",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "async-graphql-value"
-version = "6.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "323a5143f5bdd2030f45e3f2e0c821c9b1d36e79cf382129c64299c50a7f3750"
-dependencies = [
- "bytes",
- "indexmap 2.2.6",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -2127,18 +2022,7 @@ checksum = "a1a0b1dbcc8ae29329621f8d4f0d835787c1c38bb1401979b49d13b0b305ff68"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
- "brotli-decompressor 2.3.2",
-]
-
-[[package]]
-name = "brotli"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74f7971dbd9326d58187408ab83117d8ac1bb9c17b085fdacd1cf2f598719b6b"
-dependencies = [
- "alloc-no-stdlib",
- "alloc-stdlib",
- "brotli-decompressor 4.0.1",
+ "brotli-decompressor",
 ]
 
 [[package]]
@@ -2146,16 +2030,6 @@ name = "brotli-decompressor"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59ad2d4653bf5ca36ae797b1f4bb4dbddb60ce49ca4aed8a2ce4829f60425b80"
-dependencies = [
- "alloc-no-stdlib",
- "alloc-stdlib",
-]
-
-[[package]]
-name = "brotli-decompressor"
-version = "4.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a45bd2e4095a8b518033b128020dd4a55aab1c0a381ba4404a472630f4bc362"
 dependencies = [
  "alloc-no-stdlib",
  "alloc-stdlib",
@@ -4046,22 +3920,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "enum-as-inner"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffccbb6966c05b32ef8fbac435df276c4ae4d3dc55a8cd0eb9745e6c12f546a"
-dependencies = [
- "heck 0.4.1",
- "proc-macro2 1.0.78",
- "quote 1.0.35",
- "syn 2.0.48",
-]
-
-[[package]]
 name = "enum-compat-util"
 version = "0.1.0"
 dependencies = [
- "serde_yaml 0.8.26",
+ "serde_yaml",
 ]
 
 [[package]]
@@ -4473,15 +4335,6 @@ dependencies = [
  "lazy_static",
  "log",
  "rand 0.7.3",
-]
-
-[[package]]
-name = "fast_chemail"
-version = "0.9.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "495a39d30d624c2caabe6312bfead73e7717692b44e0b32df168c275a2e8e9e4"
-dependencies = [
- "ascii_utils",
 ]
 
 [[package]]
@@ -4978,29 +4831,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gcp-bigquery-client"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7fe3895eb99784b8ad2776688b41e068e918d18ebb736dafb1a321bce46c749"
-dependencies = [
- "async-stream",
- "async-trait",
- "dyn-clone",
- "hyper 0.14.26",
- "hyper-rustls 0.25.0",
- "log",
- "reqwest 0.12.4",
- "serde",
- "serde_json",
- "thiserror",
- "time",
- "tokio",
- "tokio-stream",
- "url",
- "yup-oauth2",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5278,20 +5108,6 @@ dependencies = [
  "cfg-if",
  "crunchy",
  "num-traits",
-]
-
-[[package]]
-name = "handlebars"
-version = "4.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faa67bab9ff362228eb3d00bd024a4965d8231bbb7921167f0cfa66c6626b225"
-dependencies = [
- "log",
- "pest",
- "pest_derive",
- "serde",
- "serde_json",
- "thiserror",
 ]
 
 [[package]]
@@ -5615,23 +5431,6 @@ dependencies = [
  "tokio",
  "tokio-rustls 0.24.0",
  "webpki-roots 0.23.1",
-]
-
-[[package]]
-name = "hyper-rustls"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "399c78f9338483cb7e630c8474b07268983c6bd5acee012e4211f9f7bb21b070"
-dependencies = [
- "futures-util",
- "http 0.2.9",
- "hyper 0.14.26",
- "log",
- "rustls 0.22.4",
- "rustls-native-certs 0.7.1",
- "rustls-pki-types",
- "tokio",
- "tokio-rustls 0.25.0",
 ]
 
 [[package]]
@@ -6541,15 +6340,6 @@ dependencies = [
 
 [[package]]
 name = "lru"
-version = "0.7.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e999beba7b6e8345721bd280141ed958096a2e4abdf74f67ff4ce49b4b54e47a"
-dependencies = [
- "hashbrown 0.12.3",
-]
-
-[[package]]
-name = "lru"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03f1160296536f10c833a82dca22267d5486734230d47bf00bf435885814ba1e"
@@ -6602,15 +6392,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lz4_flex"
-version = "0.11.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75761162ae2b0e580d7e7c390558127e5f01b4194debd6221fd8c207fc80e3f5"
-dependencies = [
- "twox-hash",
-]
-
-[[package]]
 name = "mach2"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6624,12 +6405,6 @@ name = "maplit"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
-
-[[package]]
-name = "markdown-gen"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8034621d7f1258317ca1dfb9205e3925d27ee4aa2a46620a09c567daf0310562"
 
 [[package]]
 name = "match_opt"
@@ -7055,7 +6830,7 @@ dependencies = [
  "move-vm-runtime",
  "move-vm-test-utils",
  "move-vm-types",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "tempfile",
  "toml_edit 0.14.4",
  "walkdir",
@@ -7193,23 +6968,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "move-ir-compiler"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bcs",
- "clap",
- "move-abstract-interpreter",
- "move-binary-format",
- "move-bytecode-source-map",
- "move-bytecode-verifier",
- "move-command-line-common",
- "move-core-types",
- "move-ir-to-bytecode",
- "serde_json",
-]
-
-[[package]]
 name = "move-ir-to-bytecode"
 version = "0.1.0"
 dependencies = [
@@ -7295,7 +7053,7 @@ dependencies = [
  "petgraph 0.5.1",
  "regex",
  "serde",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sha2 0.9.9",
  "tempfile",
  "toml 0.5.11",
@@ -7436,36 +7194,6 @@ dependencies = [
  "once_cell",
  "phf",
  "serde",
-]
-
-[[package]]
-name = "move-transactional-test-runner"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "clap",
- "move-binary-format",
- "move-bytecode-source-map",
- "move-cli",
- "move-command-line-common",
- "move-compiler",
- "move-core-types",
- "move-disassembler",
- "move-ir-compiler",
- "move-ir-types",
- "move-stdlib",
- "move-stdlib-natives",
- "move-symbol-pool",
- "move-vm-config",
- "move-vm-runtime",
- "move-vm-test-utils",
- "move-vm-types",
- "once_cell",
- "rayon",
- "regex",
- "tempfile",
- "tokio",
 ]
 
 [[package]]
@@ -7653,24 +7381,6 @@ dependencies = [
  "proc-macro2 1.0.78",
  "quote 1.0.35",
  "syn 1.0.107",
-]
-
-[[package]]
-name = "multer"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01acbdc23469fd8fe07ab135923371d5f5a422fbf9c522158677c8eb15bc51c2"
-dependencies = [
- "bytes",
- "encoding_rs",
- "futures-util",
- "http 0.2.9",
- "httparse",
- "log",
- "memchr",
- "mime",
- "spin 0.9.8",
- "version_check",
 ]
 
 [[package]]
@@ -7986,7 +7696,7 @@ dependencies = [
  "rand 0.8.5",
  "reqwest 0.12.4",
  "serde-reflection",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-keys",
  "sui-protocol-config",
  "sui-types",
@@ -8627,15 +8337,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num_threads"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "number_prefix"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8671,7 +8372,6 @@ dependencies = [
  "rand 0.8.5",
  "reqwest 0.12.4",
  "ring 0.17.8",
- "rustls-pemfile 2.1.2",
  "serde",
  "serde_json",
  "snafu",
@@ -8789,22 +8489,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "opentelemetry"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e32339a5dc40459130b3bd269e9892439f55b33e772d2a9d402a789baaf4e8a"
-dependencies = [
- "futures-core",
- "futures-sink",
- "indexmap 2.2.6",
- "js-sys",
- "once_cell",
- "pin-project-lite",
- "thiserror",
- "urlencoding",
-]
-
-[[package]]
 name = "opentelemetry-otlp"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8841,7 +8525,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73c9f9340ad135068800e7f1b24e9e09ed9e7143f5bf8518ded3d3ec69789269"
 dependencies = [
- "opentelemetry 0.20.0",
+ "opentelemetry",
 ]
 
 [[package]]
@@ -8873,7 +8557,7 @@ dependencies = [
  "futures-util",
  "once_cell",
  "opentelemetry_api",
- "ordered-float 3.9.1",
+ "ordered-float",
  "percent-encoding",
  "rand 0.8.5",
  "regex",
@@ -8888,15 +8572,6 @@ name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
-
-[[package]]
-name = "ordered-float"
-version = "2.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68f19d67e5a2795c94e73e0bb1cc1a7edeb2e28efd39e2e1c9b7a40c1108b11c"
-dependencies = [
- "num-traits",
-]
 
 [[package]]
 name = "ordered-float"
@@ -9100,39 +8775,6 @@ dependencies = [
  "redox_syscall 0.4.1",
  "smallvec",
  "windows-targets 0.48.0",
-]
-
-[[package]]
-name = "parquet"
-version = "52.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e977b9066b4d3b03555c22bdc442f3fadebd96a39111249113087d0edb2691cd"
-dependencies = [
- "ahash 0.8.11",
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-ipc",
- "arrow-schema",
- "arrow-select",
- "base64 0.22.1",
- "brotli 6.0.0",
- "bytes",
- "chrono",
- "flate2",
- "half 2.4.1",
- "hashbrown 0.14.5",
- "lz4_flex",
- "num",
- "num-bigint 0.4.4",
- "paste",
- "seq-macro",
- "snap",
- "thrift",
- "twox-hash",
- "zstd 0.13.2",
- "zstd-sys",
 ]
 
 [[package]]
@@ -9796,20 +9438,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prometheus-http-query"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0de773a6ba25c9164ed9d86d653a92fac759a6f0e683fd141d56bb96e80fd8b"
-dependencies = [
- "enum-as-inner",
- "mime",
- "reqwest 0.11.20",
- "serde",
- "time",
- "url",
-]
-
-[[package]]
 name = "prometheus-parse"
 version = "0.2.3"
 source = "git+https://github.com/asonnino/prometheus-parser.git?rev=75334db#75334dbe2d286edf6d4424abba92a74643333096"
@@ -10405,7 +10033,6 @@ dependencies = [
  "http 0.2.9",
  "http-body 0.4.5",
  "hyper 0.14.26",
- "hyper-rustls 0.24.0",
  "ipnet",
  "js-sys",
  "log",
@@ -10413,19 +10040,15 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls 0.21.12",
- "rustls-pemfile 1.0.2",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
- "tokio-rustls 0.24.0",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "webpki-roots 0.25.2",
  "winreg 0.50.0",
 ]
 
@@ -11262,12 +10885,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "seahash"
-version = "4.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
-
-[[package]]
 name = "sec1"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11385,12 +11002,6 @@ name = "send_wrapper"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
-
-[[package]]
-name = "seq-macro"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3f0bf26fd526d2a95683cd0f87bf103b8539e2ca1ef48ce002d67aad59aa0b4"
 
 [[package]]
 name = "serde"
@@ -11595,19 +11206,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_yaml"
-version = "0.9.34+deprecated"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
-dependencies = [
- "indexmap 2.2.6",
- "itoa",
- "ryu",
- "serde",
- "unsafe-libyaml",
-]
-
-[[package]]
 name = "serdect"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11615,31 +11213,6 @@ checksum = "a84f14a19e9a014bb9f4512488d9829a68e04ecabffb0f9904cd1ace94598177"
 dependencies = [
  "base16ct 0.2.0",
  "serde",
-]
-
-[[package]]
-name = "serial_test"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e56dd856803e253c8f298af3f4d7eb0ae5e23a737252cd90bb4f3b435033b2d"
-dependencies = [
- "dashmap",
- "futures",
- "lazy_static",
- "log",
- "parking_lot 0.12.1",
- "serial_test_derive",
-]
-
-[[package]]
-name = "serial_test_derive"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91d129178576168c589c9ec973feedf7d3126c01ac2bf08795109aa35b69fb8f"
-dependencies = [
- "proc-macro2 1.0.78",
- "quote 1.0.35",
- "syn 2.0.48",
 ]
 
 [[package]]
@@ -12279,18 +11852,16 @@ dependencies = [
  "rustyline-derive",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "shell-words",
  "shlex",
  "signature 1.6.4",
  "sui-bridge",
- "sui-cluster-test",
  "sui-config",
  "sui-execution",
  "sui-faucet",
  "sui-genesis-builder",
- "sui-graphql-rpc",
  "sui-indexer",
  "sui-json",
  "sui-json-rpc-types",
@@ -12351,14 +11922,6 @@ dependencies = [
  "sui-types",
  "sui-verifier-latest",
  "tracing",
-]
-
-[[package]]
-name = "sui-adapter-transactional-tests"
-version = "0.1.0"
-dependencies = [
- "datatest-stable",
- "sui-transactional-test-runner",
 ]
 
 [[package]]
@@ -12441,69 +12004,6 @@ dependencies = [
  "sui-types",
  "sui-verifier-v2",
  "tracing",
-]
-
-[[package]]
-name = "sui-analytics-indexer"
-version = "1.30.1"
-dependencies = [
- "anyhow",
- "arrow",
- "arrow-array",
- "async-trait",
- "axum",
- "bcs",
- "byteorder",
- "bytes",
- "chrono",
- "clap",
- "csv",
- "eyre",
- "fastcrypto",
- "gcp-bigquery-client",
- "move-binary-format",
- "move-bytecode-utils",
- "move-core-types",
- "mysten-metrics",
- "num_enum 0.6.1",
- "object_store",
- "parquet",
- "prometheus",
- "rocksdb",
- "serde",
- "serde_json",
- "simulacrum",
- "snowflake-api",
- "strum 0.24.1",
- "strum_macros 0.24.3",
- "sui-analytics-indexer-derive",
- "sui-config",
- "sui-data-ingestion-core",
- "sui-indexer",
- "sui-json-rpc-types",
- "sui-package-resolver",
- "sui-rest-api",
- "sui-storage",
- "sui-types",
- "tap",
- "telemetry-subscribers",
- "tempfile",
- "thiserror",
- "tokio",
- "tokio-stream",
- "tracing",
- "typed-store",
- "typed-store-derive",
- "url",
-]
-
-[[package]]
-name = "sui-analytics-indexer-derive"
-version = "1.30.1"
-dependencies = [
- "proc-macro2 1.0.78",
- "quote 1.0.35",
- "syn 1.0.107",
 ]
 
 [[package]]
@@ -12726,7 +12226,7 @@ dependencies = [
  "mysten-metrics",
  "prometheus",
  "serde",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-bridge",
  "sui-config",
  "sui-data-ingestion-core",
@@ -12739,45 +12239,6 @@ dependencies = [
  "test-cluster",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "sui-cluster-test"
-version = "1.30.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "clap",
- "derivative",
- "diesel",
- "fastcrypto",
- "futures",
- "jsonrpsee",
- "move-core-types",
- "prometheus",
- "regex",
- "reqwest 0.12.4",
- "serde_json",
- "shared-crypto",
- "sui-config",
- "sui-core",
- "sui-faucet",
- "sui-graphql-rpc",
- "sui-indexer",
- "sui-json",
- "sui-json-rpc-types",
- "sui-keys",
- "sui-sdk 1.30.1",
- "sui-swarm",
- "sui-swarm-config",
- "sui-test-transaction-builder",
- "sui-types",
- "telemetry-subscribers",
- "tempfile",
- "test-cluster",
- "tokio",
- "tracing",
- "uuid 1.2.2",
 ]
 
 [[package]]
@@ -12801,7 +12262,7 @@ dependencies = [
  "reqwest 0.12.4",
  "serde",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-keys",
  "sui-protocol-config",
  "sui-types",
@@ -12881,7 +12342,7 @@ dependencies = [
  "serde-reflection",
  "serde_json",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "signature 1.6.4",
  "static_assertions",
@@ -12963,7 +12424,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-archival",
  "sui-data-ingestion-core",
  "sui-storage",
@@ -13070,7 +12531,7 @@ dependencies = [
 name = "sui-enum-compat-util"
 version = "0.1.0"
 dependencies = [
- "serde_yaml 0.8.26",
+ "serde_yaml",
 ]
 
 [[package]]
@@ -13228,7 +12689,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "sui-config",
  "sui-execution",
@@ -13239,123 +12700,6 @@ dependencies = [
  "sui-types",
  "tempfile",
  "tracing",
-]
-
-[[package]]
-name = "sui-graphql-config"
-version = "1.30.1"
-dependencies = [
- "quote 1.0.35",
- "syn 1.0.107",
-]
-
-[[package]]
-name = "sui-graphql-e2e-tests"
-version = "0.1.0"
-dependencies = [
- "datatest-stable",
- "msim",
- "sui-graphql-rpc",
- "sui-transactional-test-runner",
- "tokio",
-]
-
-[[package]]
-name = "sui-graphql-rpc"
-version = "2024.7.0"
-dependencies = [
- "anyhow",
- "async-graphql",
- "async-graphql-axum",
- "async-graphql-value",
- "async-trait",
- "axum",
- "bcs",
- "bin-version",
- "chrono",
- "clap",
- "const-str",
- "diesel",
- "downcast",
- "either",
- "expect-test",
- "fastcrypto",
- "fastcrypto-zkp",
- "futures",
- "hex",
- "http 0.2.9",
- "hyper 0.14.26",
- "im",
- "insta",
- "itertools 0.10.5",
- "lru 0.10.0",
- "markdown-gen",
- "move-binary-format",
- "move-bytecode-utils",
- "move-core-types",
- "move-disassembler",
- "move-ir-types",
- "mysten-metrics",
- "mysten-network",
- "once_cell",
- "prometheus",
- "rand 0.8.5",
- "regex",
- "reqwest 0.12.4",
- "serde",
- "serde_json",
- "serde_with 3.8.1",
- "serde_yaml 0.8.26",
- "serial_test",
- "shared-crypto",
- "similar",
- "simulacrum",
- "sui-framework",
- "sui-graphql-config",
- "sui-graphql-rpc-client",
- "sui-graphql-rpc-headers",
- "sui-indexer",
- "sui-json-rpc",
- "sui-json-rpc-types",
- "sui-package-resolver",
- "sui-protocol-config",
- "sui-rest-api",
- "sui-sdk 1.30.1",
- "sui-swarm-config",
- "sui-test-transaction-builder",
- "sui-types",
- "tap",
- "telemetry-subscribers",
- "tempfile",
- "test-cluster",
- "thiserror",
- "tokio",
- "tokio-util 0.7.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "toml 0.7.4",
- "tower",
- "tower-http",
- "tracing",
- "uuid 1.2.2",
-]
-
-[[package]]
-name = "sui-graphql-rpc-client"
-version = "0.1.0"
-dependencies = [
- "async-graphql",
- "axum",
- "hyper 0.14.26",
- "reqwest 0.12.4",
- "serde_json",
- "sui-graphql-rpc-headers",
- "thiserror",
-]
-
-[[package]]
-name = "sui-graphql-rpc-headers"
-version = "0.1.0"
-dependencies = [
- "axum",
 ]
 
 [[package]]
@@ -13610,7 +12954,7 @@ dependencies = [
  "move-core-types",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-config",
  "sui-json",
  "sui-json-rpc-types",
@@ -13628,27 +12972,6 @@ dependencies = [
  "futures",
  "once_cell",
  "sui-proc-macros",
- "tracing",
-]
-
-[[package]]
-name = "sui-metric-checker"
-version = "1.30.1"
-dependencies = [
- "anyhow",
- "backoff",
- "base64 0.21.2",
- "chrono",
- "clap",
- "humantime",
- "once_cell",
- "prometheus-http-query",
- "reqwest 0.12.4",
- "serde",
- "serde_yaml 0.9.34+deprecated",
- "strum_macros 0.24.3",
- "telemetry-subscribers",
- "tokio",
  "tracing",
 ]
 
@@ -13679,7 +13002,7 @@ dependencies = [
  "prometheus",
  "rand 0.8.5",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-core",
  "sui-macros",
  "sui-move-build",
@@ -14069,7 +13392,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "snap",
  "sui-tls",
  "sui-types",
@@ -14104,7 +13427,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "shellexpand",
  "similar",
@@ -14149,7 +13472,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-protocol-config",
  "sui-sdk 0.0.0",
  "sui-types",
@@ -14516,7 +13839,7 @@ dependencies = [
  "typed-store",
  "typed-store-derive",
  "url",
- "zstd 0.12.3+zstd.1.5.2",
+ "zstd",
 ]
 
 [[package]]
@@ -14587,7 +13910,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "sui-config",
  "sui-execution",
@@ -14728,55 +14051,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sui-transactional-test-runner"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "bcs",
- "bimap",
- "clap",
- "criterion",
- "eyre",
- "fastcrypto",
- "futures",
- "move-binary-format",
- "move-bytecode-utils",
- "move-command-line-common",
- "move-compiler",
- "move-core-types",
- "move-stdlib",
- "move-symbol-pool",
- "move-transactional-test-runner",
- "move-vm-runtime",
- "msim",
- "once_cell",
- "rand 0.8.5",
- "regex",
- "rocksdb",
- "serde_json",
- "simulacrum",
- "sui-config",
- "sui-core",
- "sui-framework",
- "sui-framework-snapshot",
- "sui-graphql-rpc",
- "sui-json-rpc",
- "sui-json-rpc-api",
- "sui-json-rpc-types",
- "sui-protocol-config",
- "sui-rest-api",
- "sui-storage",
- "sui-swarm-config",
- "sui-types",
- "telemetry-subscribers",
- "tempfile",
- "tokio",
- "typed-store",
- "typed-store-derive",
-]
-
-[[package]]
 name = "sui-types"
 version = "0.1.0"
 dependencies = [
@@ -14838,7 +14112,7 @@ dependencies = [
  "serde-name",
  "serde_json",
  "serde_with 3.8.1",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "shared-crypto",
  "signature 1.6.4",
  "static_assertions",
@@ -14885,14 +14159,6 @@ dependencies = [
  "move-vm-config",
  "sui-protocol-config",
  "sui-types",
-]
-
-[[package]]
-name = "sui-verifier-transactional-tests"
-version = "0.1.0"
-dependencies = [
- "datatest-stable",
- "sui-transactional-test-runner",
 ]
 
 [[package]]
@@ -14961,7 +14227,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sui-data-ingestion-core",
  "sui-json-rpc",
  "sui-storage",
@@ -14996,7 +14262,7 @@ dependencies = [
  "semver 1.0.16",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "sha2 0.10.6",
  "spinners",
  "strum 0.24.1",
@@ -15206,7 +14472,7 @@ dependencies = [
  "crossterm 0.25.0",
  "futures",
  "once_cell",
- "opentelemetry 0.20.0",
+ "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry-proto",
  "opentelemetry_api",
@@ -15410,17 +14676,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "thrift"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e54bc85fc7faa8bc175c4bab5b92ba8d9a3ce893d0e9f42cc455c8ab16a9e09"
-dependencies = [
- "byteorder",
- "integer-encoding",
- "ordered-float 2.10.1",
-]
-
-[[package]]
 name = "time"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -15428,8 +14683,6 @@ checksum = "f657ba42c3f86e7680e53c8cd3af8abbe56b5491790b46e22e19c0d57463583e"
 dependencies = [
  "deranged",
  "itoa",
- "libc",
- "num_threads",
  "powerfmt",
  "serde",
  "time-core",
@@ -16001,8 +15254,6 @@ version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97d095ae15e245a057c8e8451bab9b3ee1e1f68e9ba2b4fbc18d0ac5237835f2"
 dependencies = [
- "futures",
- "futures-task",
  "pin-project",
  "tracing",
 ]
@@ -16025,7 +15276,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75327c6b667828ddc28f5e3f169036cb793c3f588d83bf0f262a7f062ffed3c8"
 dependencies = [
  "once_cell",
- "opentelemetry 0.20.0",
+ "opentelemetry",
  "opentelemetry_sdk",
  "smallvec",
  "tracing",
@@ -16359,12 +15610,6 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
-
-[[package]]
-name = "unsafe-libyaml"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "unsigned-varint"
@@ -16717,12 +15962,6 @@ checksum = "b03058f88386e5ff5310d9111d53f48b17d732b401aeb83a8d5190f2ac459338"
 dependencies = [
  "rustls-webpki 0.100.3",
 ]
-
-[[package]]
-name = "webpki-roots"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14247bb57be4f377dfb94c72830b8ce8fc6beac03cf4bf7b9732eadd414123fc"
 
 [[package]]
 name = "webpki-roots"
@@ -17156,33 +16395,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "yup-oauth2"
-version = "8.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b61da40aeb0907a65f7fb5c1de83c5a224d6a9ebb83bf918588a2bb744d636b8"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64 0.21.2",
- "futures",
- "http 0.2.9",
- "hyper 0.14.26",
- "hyper-rustls 0.24.0",
- "itertools 0.12.0",
- "log",
- "percent-encoding",
- "rustls 0.22.4",
- "rustls-pemfile 1.0.2",
- "seahash",
- "serde",
- "serde_json",
- "time",
- "tokio",
- "tower-service",
- "url",
-]
-
-[[package]]
 name = "zerocopy"
 version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -17229,16 +16441,7 @@ version = "0.12.3+zstd.1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76eea132fb024e0e13fd9c2f5d5d595d8a967aa72382ac2f9d39fcc95afd0806"
 dependencies = [
- "zstd-safe 6.0.5+zstd.1.5.4",
-]
-
-[[package]]
-name = "zstd"
-version = "0.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcf2b778a664581e31e389454a7072dab1647606d44f7feea22cd5abb9c9f3f9"
-dependencies = [
- "zstd-safe 7.2.1",
+ "zstd-safe",
 ]
 
 [[package]]
@@ -17248,15 +16451,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d56d9e60b4b1758206c238a10165fbcae3ca37b01744e394c463463f6529d23b"
 dependencies = [
  "libc",
- "zstd-sys",
-]
-
-[[package]]
-name = "zstd-safe"
-version = "7.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54a3ab4db68cea366acc5c897c7b4d4d1b8994a9cd6e6f841f8964566a419059"
-dependencies = [
  "zstd-sys",
 ]
 

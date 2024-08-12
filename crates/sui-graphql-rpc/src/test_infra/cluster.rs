@@ -6,6 +6,8 @@ use crate::config::ServerConfig;
 use crate::config::ServiceConfig;
 use crate::config::Version;
 use crate::server::graphiql_server::start_graphiql_server;
+use odin::ConnectOptions;
+use odin::Odin;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -20,6 +22,7 @@ use sui_indexer::test_utils::start_test_indexer;
 use sui_indexer::test_utils::start_test_indexer_impl;
 use sui_indexer::test_utils::ReaderWriterConfig;
 use sui_swarm_config::genesis_config::{AccountConfig, DEFAULT_GAS_AMOUNT};
+use sui_types::nats_queue::nats_queue;
 use sui_types::storage::RestStateReader;
 use test_cluster::TestCluster;
 use test_cluster::TestClusterBuilder;
@@ -67,12 +70,27 @@ pub async fn start_cluster(
         start_validator_with_fullnode(internal_data_source_rpc_port, data_ingestion_path.clone())
             .await;
 
+    let odin = Odin::connect(
+        Some(vec![
+            "nats://localhost:4228".to_string(),
+            "nats://localhost:4229".to_string(),
+        ]),
+        Some(ConnectOptions::with_user_and_password(
+            "alexandria".to_string(),
+            "alexandria".to_string(),
+        )),
+    )
+    .await;
+    let odin_connection: Arc<Odin> = Arc::new(odin);
+    let queue_sender = nats_queue(odin_connection.clone());
+
     // Starts indexer
     let (pg_store, pg_handle) = start_test_indexer(
         Some(db_url),
         val_fn.rpc_url().to_string(),
         ReaderWriterConfig::writer_mode(None),
         data_ingestion_path,
+        queue_sender,
     )
     .await;
 
@@ -127,6 +145,20 @@ pub async fn serve_executor(
             .await;
     });
 
+    let odin = Odin::connect(
+        Some(vec![
+            "nats://localhost:4228".to_string(),
+            "nats://localhost:4229".to_string(),
+        ]),
+        Some(ConnectOptions::with_user_and_password(
+            "alexandria".to_string(),
+            "alexandria".to_string(),
+        )),
+    )
+    .await;
+    let odin_connection: Arc<Odin> = Arc::new(odin);
+    let queue_sender = nats_queue(odin_connection.clone());
+
     let (pg_store, pg_handle) = start_test_indexer_impl(
         Some(db_url),
         format!("http://{}", executor_server_url),
@@ -134,6 +166,7 @@ pub async fn serve_executor(
         Some(graphql_connection_config.db_name()),
         Some(data_ingestion_path),
         cancellation_token.clone(),
+        queue_sender,
     )
     .await;
 

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 
 use clap::*;
 use object_store::aws::AmazonS3Builder;
@@ -168,37 +168,37 @@ impl ObjectStoreConfig {
             self.object_store_connection_limit,
         )))
     }
-    fn new_gcs(&self) -> Result<Arc<DynObjectStore>, anyhow::Error> {
-        use object_store::gcp::GoogleCloudStorageBuilder;
-        use object_store::limit::LimitStore;
+    // fn new_gcs(&self) -> Result<Arc<DynObjectStore>, anyhow::Error> {
+    //     use object_store::gcp::GoogleCloudStorageBuilder;
+    //     use object_store::limit::LimitStore;
 
-        info!(bucket=?self.bucket, object_store_type="GCS", "Object Store");
+    //     info!(bucket=?self.bucket, object_store_type="GCS", "Object Store");
 
-        let mut builder = GoogleCloudStorageBuilder::new();
+    //     let mut builder = GoogleCloudStorageBuilder::new();
 
-        if let Some(bucket) = &self.bucket {
-            builder = builder.with_bucket_name(bucket);
-        }
-        if let Some(account) = &self.google_service_account {
-            builder = builder.with_service_account_path(account);
-        }
-        if let Some(google_project_id) = &self.google_project_id {
-            let x_project_header = HeaderName::from_static("x-goog-user-project");
-            let iam_req_header = HeaderName::from_static("userproject");
+    //     if let Some(bucket) = &self.bucket {
+    //         builder = builder.with_bucket_name(bucket);
+    //     }
+    //     if let Some(account) = &self.google_service_account {
+    //         builder = builder.with_service_account_path(account);
+    //     }
+    //     if let Some(google_project_id) = &self.google_project_id {
+    //         let x_project_header = HeaderName::from_static("x-goog-user-project");
+    //         let iam_req_header = HeaderName::from_static("userproject");
 
-            let mut headers = HeaderMap::new();
-            headers.insert(x_project_header, HeaderValue::from_str(google_project_id)?);
-            headers.insert(iam_req_header, HeaderValue::from_str(google_project_id)?);
+    //         let mut headers = HeaderMap::new();
+    //         headers.insert(x_project_header, HeaderValue::from_str(google_project_id)?);
+    //         headers.insert(iam_req_header, HeaderValue::from_str(google_project_id)?);
 
-            builder =
-                builder.with_client_options(ClientOptions::new().with_default_headers(headers));
-        }
+    //         builder =
+    //             builder.with_client_options(ClientOptions::new().with_default_headers(headers));
+    //     }
 
-        Ok(Arc::new(LimitStore::new(
-            builder.build().context("Invalid gcs config")?,
-            self.object_store_connection_limit,
-        )))
-    }
+    //     Ok(Arc::new(LimitStore::new(
+    //         builder.build().context("Invalid gcs config")?,
+    //         self.object_store_connection_limit,
+    //     )))
+    // }
     fn new_azure(&self) -> Result<Arc<DynObjectStore>, anyhow::Error> {
         use object_store::azure::MicrosoftAzureBuilder;
         use object_store::limit::LimitStore;
@@ -227,7 +227,7 @@ impl ObjectStoreConfig {
         match &self.object_store {
             Some(ObjectStoreType::File) => self.new_local_fs(),
             Some(ObjectStoreType::S3) => self.new_s3(),
-            Some(ObjectStoreType::GCS) => self.new_gcs(),
+            Some(ObjectStoreType::GCS) => bail!("not implemented"),
             Some(ObjectStoreType::Azure) => self.new_azure(),
             _ => Err(anyhow!("At least one storage backend should be provided")),
         }

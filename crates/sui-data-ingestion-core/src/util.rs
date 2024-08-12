@@ -3,7 +3,7 @@
 
 use anyhow::Result;
 use object_store::aws::AmazonS3ConfigKey;
-use object_store::gcp::GoogleConfigKey;
+// use object_store::gcp::GoogleConfigKey;
 use object_store::{ClientOptions, ObjectStore, RetryConfig};
 use std::str::FromStr;
 use std::time::Duration;
@@ -29,16 +29,6 @@ pub fn create_remote_store_client(
             .with_retry(retry_config)
             .build()?;
         Ok(Box::new(http_store))
-    } else if Url::parse(&url)?.scheme() == "gs" {
-        let url = Url::parse(&url)?;
-        let mut builder = object_store::gcp::GoogleCloudStorageBuilder::new()
-            .with_url(url.as_str())
-            .with_retry(retry_config)
-            .with_client_options(client_options);
-        for (key, value) in remote_store_options {
-            builder = builder.with_config(GoogleConfigKey::from_str(&key)?, value);
-        }
-        Ok(Box::new(builder.build()?))
     } else {
         let url = Url::parse(&url)?;
         let mut builder = object_store::aws::AmazonS3Builder::new()

@@ -16,7 +16,7 @@ pub async fn instant_query(
     let response = client
         .query(query)
         .header(
-            AUTHORIZATION,
+            AUTHORIZATION.as_str(),
             HeaderValue::from_str(&format!(
                 "Basic {}",
                 general_purpose::STANDARD.encode(auth_header)
@@ -55,7 +55,7 @@ pub async fn range_query(
     let response = client
         .query_range(query, start, end, step)
         .header(
-            AUTHORIZATION,
+            AUTHORIZATION.as_str(),
             HeaderValue::from_str(&format!(
                 "Basic {}",
                 general_purpose::STANDARD.encode(auth_header)
