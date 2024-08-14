@@ -1516,31 +1516,32 @@ impl<U: R2D2Connection> IndexerReader<U> {
 
     pub async fn get_coins_metadata_in_blocking_task(
         &self,
-        coin_structs: Vec<StructTag>,
-    ) -> Result<Vec<SuiCoinMetadata>, IndexerError> {
+        coin_structs: Vec<(String, StructTag)>,
+    ) -> Result<HashMap<String, SuiCoinMetadata>, IndexerError> {
         self.spawn_blocking(move |this| this.get_coins_metadata(coin_structs))
             .await
     }
 
     fn get_coins_metadata(
         &self,
-        coin_structs: Vec<StructTag>,
-    ) -> Result<Vec<SuiCoinMetadata>, IndexerError> {
+        coin_structs: Vec<(String, StructTag)>,
+    ) -> Result<HashMap<String, SuiCoinMetadata>, IndexerError> {
         let request_data = coin_structs
             .iter()
-            .map(|s| {
+            .map(|(coin_type, tag)| {
                 (
-                    s.address.into(),
-                    CoinMetadata::type_(s.clone()).to_canonical_string(true),
+                    coin_type.clone(),
+                    tag.address.into(),
+                    CoinMetadata::type_(tag.clone()).to_canonical_string(true),
                 )
             })
-            .collect::<Vec<(ObjectID, String)>>();
+            .collect::<Vec<(String, ObjectID, String)>>();
 
         let mut coin_metadata_store = self.package_obj_type_cache.lock().unwrap();
 
         let coin_metadata = request_data
             .iter()
-            .filter_map(|(package_id, coin_metadata_type)| {
+            .filter_map(|(coin_type, package_id, coin_metadata_type)| {
                 let coin_metadata_obj_id = coin_metadata_store.cache_get_or_set_with(
                     format!("{}{}", package_id, coin_metadata_type),
                     || {
@@ -1557,6 +1558,7 @@ impl<U: R2D2Connection> IndexerReader<U> {
                         .ok()
                         .flatten()
                         .and_then(|metadata| SuiCoinMetadata::try_from(metadata).ok())
+                        .map(|metadata| (coin_type.clone(), metadata))
                 })
             })
             .collect();

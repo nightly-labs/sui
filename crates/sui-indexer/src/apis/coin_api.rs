@@ -8,6 +8,7 @@ use async_trait::async_trait;
 use diesel::r2d2::R2D2Connection;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
+use move_core_types::language_storage::StructTag;
 use sui_json_rpc::coin_api::{parse_to_struct_tag, parse_to_type_tag};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_api::{cap_page_limit, CoinReadApiServer};
@@ -130,22 +131,20 @@ impl<T: R2D2Connection + 'static> CoinReadApiServer for CoinReadApi<T> {
             .map_err(Into::into)
     }
 
-    async fn get_coins_metadata(&self, coin_types: Vec<String>) -> RpcResult<Vec<SuiCoinMetadata>> {
+    async fn get_coins_metadata(
+        &self,
+        coin_types: Vec<String>,
+    ) -> RpcResult<HashMap<String, SuiCoinMetadata>> {
         let coin_structs = coin_types
             .iter()
-            .map(|coin_type| parse_to_struct_tag(coin_type))
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|coin_type| {
+                parse_to_struct_tag(coin_type).map(|struct_tag| (coin_type.clone(), struct_tag))
+            })
+            .collect::<Result<Vec<(String, StructTag)>, _>>()?;
         self.inner
             .get_coins_metadata_in_blocking_task(coin_structs)
             .await
             .map_err(Into::into)
-    }
-
-    async fn get_coins_metadata2(
-        &self,
-        coin_types: Vec<String>,
-    ) -> RpcResult<HashMap<String, SuiCoinMetadata>> {
-        return Ok(HashMap::new());
     }
 
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {

@@ -216,24 +216,7 @@ impl CoinReadApiServer for CoinReadApi {
     }
 
     #[instrument(skip(self))]
-    async fn get_coins_metadata(&self, coin_types: Vec<String>) -> RpcResult<Vec<SuiCoinMetadata>> {
-        with_tracing!(async move {
-            let coin_tasks = coin_types
-                .into_iter()
-                .map(|coin_type| async move { self.get_coin_metadata(coin_type).await });
-
-            let metadata: Vec<SuiCoinMetadata> = join_all(coin_tasks)
-                .await
-                .into_iter()
-                .filter_map(|result| result.ok().flatten())
-                .collect();
-
-            Ok(metadata)
-        })
-    }
-
-    #[instrument(skip(self))]
-    async fn get_coins_metadata2(
+    async fn get_coins_metadata(
         &self,
         coin_types: Vec<String>,
     ) -> RpcResult<HashMap<String, SuiCoinMetadata>> {
