@@ -8384,7 +8384,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ce64446#ce64446d5ebe07fa36ab586ab169f50d65f607d1"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=063e6ff#063e6ff6ed0e6fe8ba6c92664498350ece3e88ea"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -11723,7 +11723,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=ce64446#ce64446d5ebe07fa36ab586ab169f50d65f607d1"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=063e6ff#063e6ff6ed0e6fe8ba6c92664498350ece3e88ea"
 dependencies = [
  "bitcode",
  "dotenvy",
@@ -11732,6 +11732,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with 3.8.1",
+ "strum 0.26.3",
  "typeshare",
 ]
 
@@ -11754,6 +11755,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "strum"
+version = "0.26.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
+dependencies = [
+ "strum_macros 0.26.4",
+]
+
+[[package]]
 name = "strum_macros"
 version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11773,6 +11783,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad8d03b598d3d0fff69bf533ee3ef19b8eeb342729596df84bcc7e1f96ec4059"
 dependencies = [
  "heck 0.4.1",
+ "proc-macro2 1.0.78",
+ "quote 1.0.35",
+ "rustversion",
+ "syn 2.0.48",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.26.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
+dependencies = [
+ "heck 0.5.0",
  "proc-macro2 1.0.78",
  "quote 1.0.35",
  "rustversion",
