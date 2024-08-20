@@ -1054,7 +1054,7 @@ pub fn generate_updates_from_checkpoint_data(
                         let coin_type = coin_changes.keys().next().unwrap();
                         let amount = coin_changes.values().next().unwrap();
 
-                        if coin_type != "0x2::sui::SUI" {
+                        if coin_type != "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" {
                             error!("Unexpected coin type for single coin change: {}", coin_type);
                             continue;
                         }
@@ -1102,7 +1102,7 @@ pub fn generate_updates_from_checkpoint_data(
                     let mut other_token_type = String::new();
 
                     for (coin_type, amount) in coin_changes {
-                        if coin_type == "0x2::sui::SUI" {
+                        if coin_type == &"0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI".to_string() {
                             sui_change = *amount;
                         } else {
                             other_change = *amount;
@@ -1126,7 +1126,7 @@ pub fn generate_updates_from_checkpoint_data(
                         let (base_coin_type, base_amount, quote_coin_type, quote_amount) =
                             if sui_change < 0 {
                                 (
-                                    "0x2::sui::SUI",
+                                    "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
                                     sui_change,
                                     other_token_type.as_str(),
                                     other_change,
@@ -1135,7 +1135,7 @@ pub fn generate_updates_from_checkpoint_data(
                                 (
                                     other_token_type.as_str(),
                                     other_change,
-                                    "0x2::sui::SUI",
+                                    "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
                                     sui_change,
                                 )
                             };
@@ -1179,7 +1179,7 @@ pub fn generate_updates_from_checkpoint_data(
                 // 1.
                 if positive_changes.is_empty() {
                     for (coin_type, amount) in negative_changes {
-                        if coin_type == "0x2::sui::SUI" {
+                        if coin_type == "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" {
                             // Check if SUI change was equal to gas change
                             if amount == gas_change {
                                 // Gas payment, do nothing
