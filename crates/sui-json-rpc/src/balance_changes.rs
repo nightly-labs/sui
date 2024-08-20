@@ -260,6 +260,15 @@ pub async fn get_balance_changes_with_status_from_effect<P: ObjectProvider<Error
         });
     });
 
+    // Append gas balance change
+    all_balance_changes_with_status.push(BalanceChangeWithStatus {
+        owner: gas_owner,
+        coin_type: TypeTag::Bool, // we use this type to easily identify gas
+        amount: effects.gas_cost_summary().net_gas_usage() as i128,
+        object_id: object_id.to_canonical_string(true),
+        status: ObjectStatus::Mutated,
+    });
+
     return Ok(all_balance_changes_with_status);
 }
 
