@@ -4,7 +4,7 @@
 use std::sync::Arc;
 
 use clap::Parser;
-use odin::{get_odin, ConnectOptions, Odin};
+use odin::{ConnectOptions, Odin};
 use sui_types::nats_queue::nats_queue;
 use tracing::info;
 

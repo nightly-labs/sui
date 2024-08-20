@@ -347,7 +347,7 @@ hashbrown = "0.12"
 hdrhistogram = "7.5.1"
 hex = "0.4.3"
 hex-literal = "0.3.4"
-highlight = "all"
+highlight = "0.0.3"
 http = "0.2.8"
 http-body = "0.4.5"
 humantime = "2.1.0"
@@ -716,7 +716,7 @@ semver = "1.0.16"
 spinners = "4.1.0"
 include_dir = "0.7.3"
 
-odin = { git = "ssh://git@github.com/nightly-labs/alexandria.git", rev = "ce64446", package = "odin" }
+odin = { git = "ssh://git@github.com/nightly-labs/alexandria.git", rev = "bd401bc3807bba5bb5203f42cc7b8cf836be83f5", package = "odin" }
 
 [patch.crates-io]
 quinn-proto = { git = "https://github.com/quinn-rs/quinn.git", rev = "f0fa66f871b80b9d2d7075d76967c649aecc0b77" }

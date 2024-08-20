@@ -6,12 +6,18 @@ use crate::handlers::tx_processor::IndexingPackageBuffer;
 use crate::handlers::CustomCheckpointDataToCommit;
 use crate::models::display::StoredDisplay;
 use async_trait::async_trait;
+use chrono::Utc;
 use itertools::Itertools;
 use move_core_types::annotated_value::{MoveStructLayout, MoveTypeLayout};
 use move_core_types::language_storage::{StructTag, TypeTag};
 use mysten_metrics::{get_metrics, spawn_monitored_task};
+use odin::structs::sui_notifications::{
+    CoinReceived, CoinSent, CoinSwap, NftBurned, NftMinted, NftReceived, NftSent,
+    SuiIndexerNotification,
+};
 use odin::sui_ws::{
     AccountObjectsUpdate, CoinCreated, CoinMutated, CoinObjectUpdateStatus, ObjectChangeUpdate,
+    ObjectUpdateStatus,
 };
 use odin::sui_ws::{SuiWsApiMsg, TokenBalanceUpdate, TokenUpdate};
 use std::collections::{BTreeMap, HashMap};
@@ -25,7 +31,7 @@ use sui_types::dynamic_field::DynamicFieldType;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSequenceNumber,
 };
-use sui_types::nats_queue::{NatsQueueSender, WsPayload};
+use sui_types::nats_queue::{NatsQueueSender, NotificationPayload, WsPayload};
 use sui_types::object::Object;
 use tokio::sync::watch;
 use tokio_util::sync::CancellationToken;
@@ -41,7 +47,7 @@ use sui_types::event::SystemEpochInfoEvent;
 use sui_types::object::Owner;
 use sui_types::transaction::TransactionDataAPI;
 use tap::tap::TapFallible;
-use tracing::{info, warn};
+use tracing::{error, info, warn};
 
 use sui_types::base_types::ObjectID;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
@@ -157,8 +163,13 @@ where
         .await?;
 
         // Send ws updates via nats
-        let nats_ws_payload = generate_ws_updates_from_checkpoint_data(&checkpoint_data);
-        self.nats_queue.sender.send(nats_ws_payload).await?;
+        let (nats_ws_payload, notifications_payload) =
+            generate_updates_from_checkpoint_data(&checkpoint_data);
+        self.nats_queue.ws_sender.send(nats_ws_payload).await?;
+        self.nats_queue
+            .notifications_sender
+            .send(notifications_payload)
+            .await?;
 
         // Convert custom checkpoint data into original type
         self.indexed_checkpoint_sender
@@ -953,102 +964,348 @@ fn try_create_dynamic_field_info(
     }))
 }
 
-pub fn generate_ws_updates_from_checkpoint_data(
+pub fn generate_updates_from_checkpoint_data(
     checkpoint_data: &CustomCheckpointDataToCommit,
-) -> WsPayload {
+) -> (WsPayload, NotificationPayload) {
     let block_number = checkpoint_data.checkpoint.sequence_number;
-
+    let mut notifications: BTreeMap<u64, Vec<SuiIndexerNotification>> = BTreeMap::new();
     let mut ws_balance_changes: HashMap<String, TokenBalanceUpdate> = HashMap::new();
-    let mut account_object_changes: HashMap<String, AccountObjectsUpdate> = HashMap::new(); // account address -> account object changes
+    let mut account_object_changes: HashMap<String, AccountObjectsUpdate> = HashMap::new();
     let mut objects_changes: Vec<ObjectChangeUpdate> = Vec::new();
 
-    // transaction balance changes
-    for transaction in checkpoint_data.transactions.iter() {
-        for change in transaction.balance_change.iter() {
-            let user_address = match &change.owner.get_owner_address() {
+    for transaction in &checkpoint_data.transactions {
+        let transaction_id = transaction.tx_sequence_number;
+        let mut transaction_coin_changes: HashMap<String, HashMap<String, i128>> = HashMap::new();
+        let mut gas_change: i128 = 0;
+        let mut gas_owner: Option<String> = None;
+
+        // Process balance changes
+        for change in &transaction.balance_change {
+            let user_address = match change.owner.get_owner_address() {
                 Ok(address) => address.to_string(),
                 Err(_) => continue,
             };
+
+            if change.coin_type == TypeTag::Bool {
+                // This is for out custom sui gas change for transaction
+                gas_change = change.amount;
+                gas_owner = Some(user_address.clone());
+                continue;
+            }
             let coin_type = change.coin_type.to_canonical_string(true);
 
-            // Prepare ws update
+            // Update transaction_coin_changes for notifications
+            let total_change = transaction_coin_changes
+                .entry(user_address.clone())
+                .or_insert_with(HashMap::new)
+                .entry(coin_type.clone())
+                .or_insert(0);
+            *total_change += change.amount;
+
+            // Update ws_balance_changes for WS updates
             let ws_update = ws_balance_changes
                 .entry(user_address.clone())
                 .or_insert(TokenBalanceUpdate {
-                    sui_address: user_address.clone(),
+                    sui_address: user_address,
                     sequence_number: block_number,
                     changed_balances: HashMap::new(),
-                    timestamp_ms: chrono::Utc::now().timestamp_millis() as u64,
+                    timestamp_ms: Utc::now().timestamp_millis() as u64,
                 })
                 .changed_balances
                 .entry(coin_type.clone())
                 .or_insert(TokenUpdate {
-                    coin_type,
+                    coin_type: coin_type.clone(),
                     object_changes: HashMap::new(),
                 });
+
             match change.status {
-                // New coin is created
                 ObjectStatus::Created => {
-                    // Update ws update
-                    ws_update
-                        .object_changes
-                        .entry(change.object_id.clone())
-                        .or_insert(CoinObjectUpdateStatus::Created(CoinCreated {
+                    ws_update.object_changes.insert(
+                        change.object_id.clone(),
+                        CoinObjectUpdateStatus::Created(CoinCreated {
                             amount: change.amount,
-                        }));
+                        }),
+                    );
                 }
                 ObjectStatus::Mutated => {
-                    // Update ws update
-                    ws_update
-                        .object_changes
-                        .entry(change.object_id.clone())
-                        .or_insert(CoinObjectUpdateStatus::Mutated(CoinMutated {
+                    ws_update.object_changes.insert(
+                        change.object_id.clone(),
+                        CoinObjectUpdateStatus::Mutated(CoinMutated {
                             change: change.amount,
-                        }));
+                        }),
+                    );
                 }
                 ObjectStatus::Deleted => {
-                    // Update ws update
                     ws_update
                         .object_changes
-                        .entry(change.object_id.clone())
-                        .or_insert(CoinObjectUpdateStatus::Deleted);
+                        .insert(change.object_id.clone(), CoinObjectUpdateStatus::Deleted);
                 }
             }
         }
 
-        for (change_owner, object_change) in transaction.custom_object_changes.iter() {
+        // Generate notifications, There should always be at least one coin change for each transaction, SUI
+        // gas owner should be present in the transaction at this point
+        if let Some(gas_owner) = gas_owner {
+            for (sui_address, coin_changes) in &transaction_coin_changes {
+                if coin_changes.len() == 1 {
+                    // First check if single change is happening for gas owner
+                    if sui_address == &gas_owner {
+                        // Either sui was used for gas or user has sent sui to another user while also paying gas
+                        let coin_type = coin_changes.keys().next().unwrap();
+                        let amount = coin_changes.values().next().unwrap();
+
+                        if coin_type != "0x2::sui::SUI" {
+                            error!("Unexpected coin type for single coin change: {}", coin_type);
+                            continue;
+                        }
+
+                        // Check if balance change is equal to gas change,
+                        // based on the data it we should be able to determine if it was a gas payment or a transfer
+                        if *amount == gas_change {
+                            // Gas payment, do nothing
+                        } else {
+                            // Sui transfer
+                            notifications
+                                .entry(transaction_id)
+                                .or_insert_with(Vec::new)
+                                .push(SuiIndexerNotification::CoinSent(CoinSent {
+                                    sender_address: sui_address.clone(),
+                                    coin_type: coin_type.clone(),
+                                    amount: *amount,
+                                }));
+                        }
+                    } else {
+                        // Single coin change for non-gas owner, very likely a receive
+                        let coin_type = coin_changes.keys().next().unwrap();
+                        let amount = coin_changes.values().next().unwrap();
+
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::CoinReceived(CoinReceived {
+                                receiver_address: sui_address.clone(),
+                                coin_type: coin_type.clone(),
+                                amount: *amount,
+                            }));
+                    }
+
+                    continue;
+                }
+
+                if coin_changes.len() == 2 {
+                    // Two coin changes, two possible scenarios
+                    // 1. Sui gas payment and a coin transfer to another user
+                    // 2. Swap using Sui and another coin
+
+                    let mut sui_change = 0i128;
+                    let mut other_change = 0i128;
+                    let mut other_token_type = String::new();
+
+                    for (coin_type, amount) in coin_changes {
+                        if coin_type == "0x2::sui::SUI" {
+                            sui_change = *amount;
+                        } else {
+                            other_change = *amount;
+                            other_token_type = coin_type.clone();
+                        }
+                    }
+
+                    if sui_change == gas_change {
+                        // Sui gas payment and a coin transfer to another user
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::CoinSent(CoinSent {
+                                sender_address: sui_address.clone(),
+                                coin_type: other_token_type,
+                                amount: other_change,
+                            }));
+                    } else {
+                        // Swap using Sui and another coin, base is a token which we swap to receive another token
+                        // So base is the token with negative change and quote is the token with positive change
+                        let (base_coin_type, base_amount, quote_coin_type, quote_amount) =
+                            if sui_change < 0 {
+                                (
+                                    "0x2::sui::SUI",
+                                    sui_change,
+                                    other_token_type.as_str(),
+                                    other_change,
+                                )
+                            } else {
+                                (
+                                    other_token_type.as_str(),
+                                    other_change,
+                                    "0x2::sui::SUI",
+                                    sui_change,
+                                )
+                            };
+
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::CoinSwap(CoinSwap {
+                                sui_address: sui_address.clone(),
+                                spent: vec![(base_coin_type.to_string(), -base_amount)],
+                                received: vec![(quote_coin_type.to_string(), quote_amount)],
+                            }));
+                    }
+                }
+
+                //  By this point we have multiple coin changes in the transaction for the user, which means swap or multiple sends/receives
+                let mut positive_changes: Vec<(String, i128)> = coin_changes
+                    .iter()
+                    .filter(|(_, amount)| **amount > 0)
+                    .map(|(coin_type, amount)| (coin_type.clone(), *amount))
+                    .collect();
+
+                // order positive changes by amount, largest first (3, 2, 1)
+                positive_changes.sort_by(|a, b| b.1.cmp(&a.1));
+
+                let mut negative_changes: Vec<(String, i128)> = coin_changes
+                    .iter()
+                    .filter(|(_, amount)| **amount < 0)
+                    .map(|(coin_type, amount)| (coin_type.clone(), *amount))
+                    .collect();
+
+                // order negative changes by amount, largest first (-3, -2, -1)
+                negative_changes.sort_by(|a, b| a.1.cmp(&b.1));
+
+                // Few possible scenarios
+                // 1. Only negative changes, user sent multiple coins
+                // 2. Only positive changes, user received multiple coins
+                // 3. If there is at least one negative change and one positive change, it's a swap,
+                // biggest positive change is the quote coin as the rest should be just dust
+
+                // 1.
+                if positive_changes.is_empty() {
+                    for (coin_type, amount) in negative_changes {
+                        if coin_type == "0x2::sui::SUI" {
+                            // Check if SUI change was equal to gas change
+                            if amount == gas_change {
+                                // Gas payment, do nothing
+                                continue;
+                            }
+                        }
+
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::CoinSent(CoinSent {
+                                sender_address: sui_address.clone(),
+                                coin_type: coin_type.clone(),
+                                amount: -amount,
+                            }));
+                    }
+                    continue;
+                }
+
+                // 2.
+                if negative_changes.is_empty() {
+                    for (coin_type, amount) in positive_changes {
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::CoinReceived(CoinReceived {
+                                receiver_address: sui_address.clone(),
+                                coin_type: coin_type.clone(),
+                                amount,
+                            }));
+                    }
+                    continue;
+                }
+
+                // 3.
+                notifications
+                    .entry(transaction_id)
+                    .or_insert_with(Vec::new)
+                    .push(SuiIndexerNotification::CoinSwap(CoinSwap {
+                        sui_address: sui_address.clone(),
+                        spent: negative_changes,
+                        received: positive_changes,
+                    }));
+            }
+        } else {
+            error!("Gas owner not found for transaction {}", transaction_id);
+        }
+
+        // Process custom object changes
+        for (change_owner, object_change) in &transaction.custom_object_changes {
             if let Some(owner) = change_owner {
+                let owner_address = owner.to_string();
+                let nft_id = object_change.object_id.to_string();
+
+                // Update account_object_changes for WS updates
                 account_object_changes
-                    .entry(owner.to_string())
+                    .entry(owner_address.clone())
                     .or_insert(AccountObjectsUpdate {
-                        sui_address: owner.to_string(),
+                        sui_address: owner_address.clone(),
                         sequence_number: block_number,
                         object_changes: HashMap::new(),
-                        timestamp_ms: chrono::Utc::now().timestamp_millis() as u64,
+                        timestamp_ms: Utc::now().timestamp_millis() as u64,
                     })
                     .object_changes
-                    .entry(object_change.object_id.clone())
-                    .or_insert(object_change.clone());
-            }
+                    .insert(object_change.object_id.clone(), object_change.clone());
 
-            objects_changes.push(object_change.clone());
+                objects_changes.push(object_change.clone());
+
+                // Generate notifications for NFT changes
+                match &object_change.status {
+                    ObjectUpdateStatus::Created => {
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::NftMinted(NftMinted {
+                                sui_address: owner_address,
+                                nft_id,
+                            }));
+                    }
+                    ObjectUpdateStatus::Received(received) => {
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::NftReceived(NftReceived {
+                                receiver_address: received.receiver_address.clone(),
+                                nft_id,
+                            }));
+                    }
+                    ObjectUpdateStatus::Deleted => {
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::NftBurned(NftBurned {
+                                sui_address: owner_address,
+                                nft_id,
+                            }));
+                    }
+                    ObjectUpdateStatus::Sent(sent) => {
+                        notifications
+                            .entry(transaction_id)
+                            .or_insert_with(Vec::new)
+                            .push(SuiIndexerNotification::NftSent(NftSent {
+                                sender_address: sent.sender_address.clone(),
+                                nft_id,
+                            }));
+                    }
+                    _ => {}
+                }
+            }
         }
     }
 
-    let updates: Vec<SuiWsApiMsg> = ws_balance_changes
+    // Prepare WS updates
+    let ws_updates: Vec<SuiWsApiMsg> = ws_balance_changes
         .into_values()
-        .map(|v| SuiWsApiMsg::TokenBalanceUpdate(v))
+        .map(SuiWsApiMsg::TokenBalanceUpdate)
         .chain(
             account_object_changes
                 .into_values()
-                .map(|v| SuiWsApiMsg::AccountObjectsUpdate(v)),
+                .map(SuiWsApiMsg::AccountObjectsUpdate),
         )
-        .chain(
-            objects_changes
-                .into_iter()
-                .map(|v| SuiWsApiMsg::ObjectUpdate(v)),
-        )
+        .chain(objects_changes.into_iter().map(SuiWsApiMsg::ObjectUpdate))
         .collect();
 
-    return (checkpoint_data.checkpoint.sequence_number, updates);
+    return (
+        (checkpoint_data.checkpoint.sequence_number, ws_updates),
+        (checkpoint_data.checkpoint.sequence_number, notifications),
+    );
 }
