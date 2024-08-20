@@ -1145,8 +1145,7 @@ pub fn generate_updates_from_checkpoint_data(
                             .or_insert_with(Vec::new)
                             .push(SuiIndexerNotification::CoinSwap(CoinSwap {
                                 sui_address: sui_address.clone(),
-                                spent_token_type: base_coin_type.to_string(),
-                                spent_amount: -base_amount,
+                                spent: vec![(base_coin_type.to_string(), -base_amount)],
                                 received: vec![(quote_coin_type.to_string(), quote_amount)],
                             }));
                     }
@@ -1216,15 +1215,12 @@ pub fn generate_updates_from_checkpoint_data(
                 }
 
                 // 3.
-                let (base_coin_type, base_amount) = negative_changes.remove(0);
-
                 notifications
                     .entry(transaction_id)
                     .or_insert_with(Vec::new)
                     .push(SuiIndexerNotification::CoinSwap(CoinSwap {
                         sui_address: sui_address.clone(),
-                        spent_token_type: base_coin_type.clone(),
-                        spent_amount: -base_amount,
+                        spent: negative_changes,
                         received: positive_changes,
                     }));
             }

@@ -4610,7 +4610,7 @@ dependencies = [
 [[package]]
 name = "firebase"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=017d52bca2e11f6cdd98fe5fc5186e01b95c730f#017d52bca2e11f6cdd98fe5fc5186e01b95c730f"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=bd401bc3807bba5bb5203f42cc7b8cf836be83f5#bd401bc3807bba5bb5203f42cc7b8cf836be83f5"
 dependencies = [
  "fcm",
  "reqwest 0.12.4",
@@ -8481,7 +8481,7 @@ dependencies = [
 [[package]]
 name = "odin"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=017d52bca2e11f6cdd98fe5fc5186e01b95c730f#017d52bca2e11f6cdd98fe5fc5186e01b95c730f"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=bd401bc3807bba5bb5203f42cc7b8cf836be83f5#bd401bc3807bba5bb5203f42cc7b8cf836be83f5"
 dependencies = [
  "async-nats",
  "bitcode",
@@ -11867,7 +11867,7 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 [[package]]
 name = "structs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=017d52bca2e11f6cdd98fe5fc5186e01b95c730f#017d52bca2e11f6cdd98fe5fc5186e01b95c730f"
+source = "git+ssh://git@github.com/nightly-labs/alexandria.git?rev=bd401bc3807bba5bb5203f42cc7b8cf836be83f5#bd401bc3807bba5bb5203f42cc7b8cf836be83f5"
 dependencies = [
  "bitcode",
  "dotenvy",
