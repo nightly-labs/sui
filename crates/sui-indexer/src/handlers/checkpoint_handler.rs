@@ -28,6 +28,7 @@ use sui_types::base_types::ObjectRef;
 use sui_types::dynamic_field::DynamicFieldInfo;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::dynamic_field::DynamicFieldType;
+use sui_types::gas_coin::GAS;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointSequenceNumber,
 };
@@ -978,6 +979,7 @@ pub fn generate_updates_from_checkpoint_data(
         let mut transaction_coin_changes: HashMap<String, HashMap<String, i128>> = HashMap::new();
         let mut gas_change: i128 = 0;
         let mut gas_owner: Option<String> = None;
+        let gas_coin_type = GAS::type_tag().to_canonical_string(true);
 
         // Process balance changes
         for change in &transaction.balance_change {
@@ -1042,7 +1044,6 @@ pub fn generate_updates_from_checkpoint_data(
                 }
             }
         }
-
         // Generate notifications, There should always be at least one coin change for each transaction, SUI
         // gas owner should be present in the transaction at this point
         if let Some(gas_owner) = gas_owner {
@@ -1054,14 +1055,14 @@ pub fn generate_updates_from_checkpoint_data(
                         let coin_type = coin_changes.keys().next().unwrap();
                         let amount = coin_changes.values().next().unwrap();
 
-                        if coin_type != "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" {
+                        if coin_type != &gas_coin_type {
                             error!("Unexpected coin type for single coin change: {}", coin_type);
                             continue;
                         }
 
                         // Check if balance change is equal to gas change,
                         // based on the data it we should be able to determine if it was a gas payment or a transfer
-                        if *amount == gas_change {
+                        if (*amount).abs() == gas_change {
                             // Gas payment, do nothing
                         } else {
                             // Sui transfer
@@ -1071,7 +1072,7 @@ pub fn generate_updates_from_checkpoint_data(
                                 .push(SuiIndexerNotification::CoinSent(CoinSent {
                                     sender_address: sui_address.clone(),
                                     coin_type: coin_type.clone(),
-                                    amount: *amount,
+                                    amount: *amount + gas_change,
                                 }));
                         }
                     } else {
@@ -1102,7 +1103,7 @@ pub fn generate_updates_from_checkpoint_data(
                     let mut other_token_type = String::new();
 
                     for (coin_type, amount) in coin_changes {
-                        if coin_type == &"0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI".to_string() {
+                        if coin_type == &gas_coin_type.to_string() {
                             sui_change = *amount;
                         } else {
                             other_change = *amount;
@@ -1110,7 +1111,7 @@ pub fn generate_updates_from_checkpoint_data(
                         }
                     }
 
-                    if sui_change == gas_change {
+                    if sui_change.abs() == gas_change {
                         // Sui gas payment and a coin transfer to another user
                         notifications
                             .entry(transaction_id)
@@ -1126,16 +1127,16 @@ pub fn generate_updates_from_checkpoint_data(
                         let (base_coin_type, base_amount, quote_coin_type, quote_amount) =
                             if sui_change < 0 {
                                 (
-                                    "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+                                    gas_coin_type.clone(),
                                     sui_change,
-                                    other_token_type.as_str(),
+                                    other_token_type,
                                     other_change,
                                 )
                             } else {
                                 (
-                                    other_token_type.as_str(),
+                                    other_token_type,
                                     other_change,
-                                    "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+                                    gas_coin_type.clone(),
                                     sui_change,
                                 )
                             };
@@ -1149,6 +1150,8 @@ pub fn generate_updates_from_checkpoint_data(
                                 received: vec![(quote_coin_type.to_string(), quote_amount)],
                             }));
                     }
+
+                    continue;
                 }
 
                 //  By this point we have multiple coin changes in the transaction for the user, which means swap or multiple sends/receives
@@ -1178,10 +1181,10 @@ pub fn generate_updates_from_checkpoint_data(
 
                 // 1.
                 if positive_changes.is_empty() {
-                    for (coin_type, amount) in negative_changes {
-                        if coin_type == "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI" {
+                    for (coin_type, amount) in negative_changes.iter() {
+                        if coin_type == &gas_coin_type {
                             // Check if SUI change was equal to gas change
-                            if amount == gas_change {
+                            if (*amount).abs() == gas_change {
                                 // Gas payment, do nothing
                                 continue;
                             }
@@ -1215,14 +1218,28 @@ pub fn generate_updates_from_checkpoint_data(
                 }
 
                 // 3.
-                notifications
-                    .entry(transaction_id)
-                    .or_insert_with(Vec::new)
-                    .push(SuiIndexerNotification::CoinSwap(CoinSwap {
-                        sui_address: sui_address.clone(),
-                        spent: negative_changes,
-                        received: positive_changes,
-                    }));
+                {
+                    // Update used sui amount for gas owner
+                    if sui_address == &gas_owner {
+                        if let Some((_, change_amount)) = negative_changes
+                            .iter_mut()
+                            .find(|(coin_type, _)| coin_type == &gas_coin_type)
+                        {
+                            if (*change_amount).abs() >= gas_change {
+                                *change_amount += gas_change;
+                            }
+                        }
+                    }
+
+                    notifications
+                        .entry(transaction_id)
+                        .or_insert_with(Vec::new)
+                        .push(SuiIndexerNotification::CoinSwap(CoinSwap {
+                            sui_address: sui_address.clone(),
+                            spent: negative_changes,
+                            received: positive_changes,
+                        }));
+                }
             }
         } else {
             error!("Gas owner not found for transaction {}", transaction_id);
