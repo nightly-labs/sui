@@ -6,7 +6,7 @@ use std::sync::Arc;
 use clap::Parser;
 use odin::{ConnectOptions, Odin};
 use sui_types::nats_queue::nats_queue;
-use tracing::info;
+use tracing::{info, warn};
 
 use sui_indexer::errors::IndexerError;
 use sui_indexer::metrics::start_prometheus_server;
@@ -18,6 +18,7 @@ async fn main() -> Result<(), IndexerError> {
     let _guard = telemetry_subscribers::TelemetryConfig::new()
         .with_env()
         .init();
+    warn!("WARNING: Sui indexer is still experimental and we expect occasional breaking changes that require backfills.");
 
     let mut indexer_config = IndexerConfig::parse();
     // TODO: remove. Temporary safeguard to migrate to `rpc_client_url` usage

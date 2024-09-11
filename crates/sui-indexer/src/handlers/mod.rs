@@ -6,8 +6,8 @@ use std::collections::BTreeMap;
 use crate::{
     models::display::StoredDisplay,
     types::{
-        CustomIndexedTransaction, IndexedCheckpoint, IndexedDeletedObject, IndexedEpochInfo,
-        IndexedEvent, IndexedObject, IndexedPackage, IndexedTransaction, TxIndex,
+        EventIndex, IndexedCheckpoint, IndexedDeletedObject, IndexedEpochInfo, IndexedEvent,
+        IndexedObject, IndexedPackage, IndexedTransaction, TxIndex,
     },
 };
 
@@ -22,6 +22,7 @@ pub struct CheckpointDataToCommit {
     pub checkpoint: IndexedCheckpoint,
     pub transactions: Vec<IndexedTransaction>,
     pub events: Vec<IndexedEvent>,
+    pub event_indices: Vec<EventIndex>,
     pub tx_indices: Vec<TxIndex>,
     pub display_updates: BTreeMap<String, StoredDisplay>,
     pub object_changes: TransactionObjectChangesToCommit,
@@ -35,6 +36,7 @@ pub struct CustomCheckpointDataToCommit {
     pub checkpoint: IndexedCheckpoint,
     pub transactions: Vec<CustomIndexedTransaction>,
     pub events: Vec<IndexedEvent>,
+    pub event_indices: Vec<EventIndex>,
     pub tx_indices: Vec<TxIndex>,
     pub display_updates: BTreeMap<String, StoredDisplay>,
     pub object_changes: TransactionObjectChangesToCommit,
@@ -49,6 +51,7 @@ impl From<CustomCheckpointDataToCommit> for CheckpointDataToCommit {
             checkpoint: data.checkpoint,
             transactions: data.transactions.into_iter().map(Into::into).collect(),
             events: data.events,
+            event_indices: data.event_indices,
             tx_indices: data.tx_indices,
             display_updates: data.display_updates,
             object_changes: data.object_changes,
@@ -69,4 +72,5 @@ pub struct TransactionObjectChangesToCommit {
 pub struct EpochToCommit {
     pub last_epoch: Option<IndexedEpochInfo>,
     pub new_epoch: IndexedEpochInfo,
+    pub network_total_transactions: u64,
 }
