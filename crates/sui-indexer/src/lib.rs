@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 use std::net::SocketAddr;
 use std::time::Duration;

@@ -20,6 +20,7 @@ async-graphql-axum.workspace = true
 async-graphql-value.workspace = true
 async-trait.workspace = true
 axum.workspace = true
+axum-extra.workspace = true
 bin-version.workspace = true
 chrono.workspace = true
 clap.workspace = true
@@ -37,7 +38,6 @@ lru.workspace = true
 move-binary-format.workspace = true
 move-disassembler.workspace = true
 move-ir-types.workspace = true
-markdown-gen.workspace = true
 mysten-metrics.workspace = true
 mysten-network.workspace = true
 move-core-types.workspace = true
@@ -70,8 +70,8 @@ im.workspace = true
 downcast = "0.11.0"
 
 sui-graphql-config.workspace = true
-sui-graphql-rpc-headers.workspace = true
-sui-graphql-rpc-client.workspace = true
+# sui-graphql-rpc-headers.workspace = true
+# sui-graphql-rpc-client.workspace = true
 
 
 # TODO: put these behind feature flag to prevent leakage

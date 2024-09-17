@@ -82,6 +82,7 @@ impl Indexer {
             .expect("Failed to get latest tx checkpoint sequence number from DB")
             .map(|seq| seq + 1)
             .unwrap_or_default();
+        // let primary_watermark = 56614153;
         let download_queue_size = env::var("DOWNLOAD_QUEUE_SIZE")
             .unwrap_or_else(|_| DOWNLOAD_QUEUE_SIZE.to_string())
             .parse::<usize>()
@@ -122,6 +123,14 @@ impl Indexer {
             assert!(epochs_to_keep > 0, "Epochs to keep must be positive");
             let pruner: Pruner<S, T> = Pruner::new(store.clone(), epochs_to_keep, metrics.clone())?;
             spawn_monitored_task!(pruner.start(CancellationToken::new()));
+        }
+
+        // If we already have chain identifier indexed (i.e. the first checkpoint has been indexed),
+        // then we persist protocol configs for protocol versions not yet in the db.
+        // Otherwise, we would do the persisting in `commit_checkpoint` while the first cp is
+        // being indexed.
+        if let Some(chain_id) = store.get_chain_identifier().await? {
+            store.persist_protocol_configs_and_feature_flags(chain_id)?;
         }
 
         let cancel_clone = cancel.clone();
