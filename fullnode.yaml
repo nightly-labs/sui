@@ -28,7 +28,7 @@ genesis:
   genesis-file-location: "/root/sui/genesis.blob"
 
 authority-store-pruning-config:
-  num-latest-epoch-dbs-to-retain: 3
+  num-latest-epoch-dbs-to-retain: 0
   epoch-db-pruning-period-secs: 3600
   num-epochs-to-retain: 0
   max-checkpoints-in-batch: 10

@@ -82,6 +82,7 @@ impl Indexer {
             .expect("Failed to get latest tx checkpoint sequence number from DB")
             .map(|seq| seq + 1)
             .unwrap_or_default();
+        // let primary_watermark = 56614153;
         let download_queue_size = env::var("DOWNLOAD_QUEUE_SIZE")
             .unwrap_or_else(|_| DOWNLOAD_QUEUE_SIZE.to_string())
             .parse::<usize>()

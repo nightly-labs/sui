@@ -6,8 +6,8 @@ use std::collections::BTreeMap;
 use crate::{
     models::display::StoredDisplay,
     types::{
-        EventIndex, IndexedCheckpoint, IndexedDeletedObject, IndexedEpochInfo, IndexedEvent,
-        IndexedObject, IndexedPackage, IndexedTransaction, TxIndex,
+        CustomIndexedTransaction, EventIndex, IndexedCheckpoint, IndexedDeletedObject,
+        IndexedEpochInfo, IndexedEvent, IndexedObject, IndexedPackage, IndexedTransaction, TxIndex,
     },
 };
 
